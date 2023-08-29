@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           12
+// Endpoints:                           13
 // Async Callback (empty):               1
-// Total number of exported functions:  14
+// Total number of exported functions:  15
 
 #![no_std]
 
@@ -31,6 +31,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         getUserDeb => user_deb
         getAggregatedStakingScore => aggregated_staking_score
         getAggregatedUserStakingScore => aggregated_user_staking_score
+        getPendingRewards => pending_rewards
         getBaseAssetScore => base_asset_score
         getNonceAssetScore => nonce_asset_score
         getFullSetScore => full_set_score

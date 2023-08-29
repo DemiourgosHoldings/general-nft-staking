@@ -33,4 +33,14 @@ pub trait NftStakingContract:
 
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {}
+
+    fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {
+        let token_id = payments.get(0).token_identifier.clone();
+        let other_token_id_payment = payments.iter().find(|p| p.token_identifier != token_id);
+
+        require!(
+            other_token_id_payment.is_none(),
+            "Only one token id is allowed per TX"
+        );
+    }
 }
