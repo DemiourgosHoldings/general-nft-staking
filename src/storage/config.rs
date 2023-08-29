@@ -32,4 +32,8 @@ pub trait ConfigModule {
     #[storage_mapper("aggregated_user_staking_score")]
     fn aggregated_user_staking_score(&self, address: &ManagedAddress)
         -> SingleValueMapper<BigUint>;
+
+    #[view(getPendingRewards)]
+    #[storage_mapper("pending_rewards")]
+    fn pending_rewards(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
 }
