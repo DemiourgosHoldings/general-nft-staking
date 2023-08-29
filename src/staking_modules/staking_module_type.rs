@@ -1,3 +1,5 @@
+use super::default::DefaultStakingModule;
+
 multiversx_sc::derive_imports!();
 
 #[derive(TopEncode, TopDecode, Clone, PartialEq, Eq, TypeAbi)]
@@ -8,4 +10,52 @@ pub enum StakingModuleType {
     Bloodshed = 3,
     Nosferatu = 4,
     VestaXDAO = 5,
+}
+
+pub enum StakingModuleTypeMapping<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    Invalid,
+    CodingDivisionSfts(DefaultStakingModule<'a, C>),
+    XBunnies(DefaultStakingModule<'a, C>),
+    Bloodshed(DefaultStakingModule<'a, C>),
+    Nosferatu(DefaultStakingModule<'a, C>),
+    VestaXDAO(DefaultStakingModule<'a, C>),
+}
+
+pub trait StakingModuleTypeFactory<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    fn get_module(&self, sc_ref: &'a C) -> StakingModuleTypeMapping<'a, C>;
+}
+
+impl<'a, C> StakingModuleTypeFactory<'a, C> for StakingModuleType
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    fn get_module(&self, sc_ref: &'a C) -> StakingModuleTypeMapping<'a, C> {
+        match self {
+            StakingModuleType::Invalid => StakingModuleTypeMapping::Invalid,
+            StakingModuleType::CodingDivisionSfts => {
+                StakingModuleTypeMapping::CodingDivisionSfts(DefaultStakingModule::new(sc_ref))
+            }
+            StakingModuleType::XBunnies => {
+                StakingModuleTypeMapping::XBunnies(DefaultStakingModule::new(sc_ref))
+            }
+            StakingModuleType::Bloodshed => {
+                StakingModuleTypeMapping::Bloodshed(DefaultStakingModule::new(sc_ref))
+            }
+            StakingModuleType::Nosferatu => {
+                StakingModuleTypeMapping::Nosferatu(DefaultStakingModule::new(sc_ref))
+            }
+            StakingModuleType::VestaXDAO => {
+                StakingModuleTypeMapping::VestaXDAO(DefaultStakingModule::new(sc_ref))
+            }
+        }
+    }
 }
