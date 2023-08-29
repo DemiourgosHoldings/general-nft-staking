@@ -23,4 +23,13 @@ pub trait ConfigModule {
     #[view(getUserDeb)]
     #[storage_mapper("user_deb")]
     fn user_deb(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
+
+    #[view(getAggregatedStakingScore)]
+    #[storage_mapper("aggregated_staking_score")]
+    fn aggregated_staking_score(&self) -> SingleValueMapper<BigUint>;
+
+    #[view(getAggregatedUserStakingScore)]
+    #[storage_mapper("aggregated_user_staking_score")]
+    fn aggregated_user_staking_score(&self, address: &ManagedAddress)
+        -> SingleValueMapper<BigUint>;
 }
