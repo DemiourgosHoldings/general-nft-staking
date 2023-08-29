@@ -61,14 +61,14 @@ where
         }
     }
 
-    pub fn stake(&mut self, pool_id: u64, transfers: &[TransferAssetType], err_msg: &str) {
+    pub fn stake(&mut self, transfers: &[TransferAssetType], err_msg: &str) {
         let parsed_transfers = transfers.to_vec().parse_vec();
         let tx_result = self.b_mock.execute_esdt_multi_transfer(
             &self.user_address,
             &self.contract_wrapper,
             &parsed_transfers,
             |sc| {
-                sc.stake(pool_id);
+                sc.stake();
             },
         );
         Self::assert_tx_result(&tx_result, err_msg);

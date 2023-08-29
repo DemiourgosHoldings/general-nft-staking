@@ -17,13 +17,18 @@ pub trait NftStakingContract:
 
     #[payable("*")]
     #[endpoint(stake)]
-    fn stake(&self, _pool_id: u64) {}
+    fn stake(&self) {}
 
     #[endpoint(startUnbonding)]
-    fn start_unbonding(&self, _pool_id: u64, _nonces: MultiValueManagedVec<u64>) {}
+    fn start_unbonding(
+        &self,
+        _token_identifier: TokenIdentifier,
+        _nonces: MultiValueManagedVec<u64>,
+    ) {
+    }
 
     #[endpoint(claimUnbonded)]
-    fn claim_unbonded(&self, _pool_id: u64) {}
+    fn claim_unbonded(&self) {}
 
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {}

@@ -19,5 +19,5 @@ fn stake() {
         new_nft_transfer(POOL1_TOKEN_ID, 2, 1),
     ];
 
-    setup.stake(1, &transfers, NO_ERR_MSG);
+    setup.stake(&transfers, NO_ERR_MSG);
 }
