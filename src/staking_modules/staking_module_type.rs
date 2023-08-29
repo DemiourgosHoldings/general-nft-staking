@@ -22,7 +22,7 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    Invalid(InvalidStakingModule),
+    Invalid(InvalidStakingModule<'a, C>),
     CodingDivisionSfts(CodingDivisionSftStakingModule<'a, C>),
     XBunnies(DefaultStakingModule<'a, C>),
     Bloodshed(DefaultStakingModule<'a, C>),
@@ -39,6 +39,7 @@ where
         &self,
         sc_ref: &'a C,
         token_identifier: TokenIdentifier<C::Api>,
+        user_address: ManagedAddress<C::Api>,
     ) -> StakingModuleTypeMapping<'a, C>;
 }
 
@@ -51,25 +52,26 @@ where
         &self,
         sc_ref: &'a C,
         token_identifier: TokenIdentifier<C::Api>,
+        user_address: ManagedAddress<C::Api>,
     ) -> StakingModuleTypeMapping<'a, C> {
         match self {
             StakingModuleType::Invalid => {
                 StakingModuleTypeMapping::Invalid(InvalidStakingModule::new())
             }
             StakingModuleType::CodingDivisionSfts => StakingModuleTypeMapping::CodingDivisionSfts(
-                CodingDivisionSftStakingModule::new(sc_ref, token_identifier),
+                CodingDivisionSftStakingModule::new(sc_ref, token_identifier, user_address),
             ),
             StakingModuleType::XBunnies => StakingModuleTypeMapping::XBunnies(
-                DefaultStakingModule::new(sc_ref, token_identifier),
+                DefaultStakingModule::new(sc_ref, token_identifier, user_address),
             ),
             StakingModuleType::Bloodshed => StakingModuleTypeMapping::Bloodshed(
-                DefaultStakingModule::new(sc_ref, token_identifier),
+                DefaultStakingModule::new(sc_ref, token_identifier, user_address),
             ),
             StakingModuleType::Nosferatu => StakingModuleTypeMapping::Nosferatu(
-                DefaultStakingModule::new(sc_ref, token_identifier),
+                DefaultStakingModule::new(sc_ref, token_identifier, user_address),
             ),
             StakingModuleType::VestaXDAO => StakingModuleTypeMapping::VestaXDAO(
-                DefaultStakingModule::new(sc_ref, token_identifier),
+                DefaultStakingModule::new(sc_ref, token_identifier, user_address),
             ),
         }
     }
@@ -80,6 +82,48 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    fn get_base_user_score(&self, address: &ManagedAddress<C::Api>) -> BigUint<C::Api>;
-    fn get_final_user_score(&self, address: &ManagedAddress<C::Api>) -> BigUint<C::Api>;
+    fn get_base_user_score(&self) -> BigUint<C::Api>;
+    fn get_final_user_score(&self) -> BigUint<C::Api>;
+    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>);
+}
+
+impl<'a, C> VestaStakingModule<'a, C> for StakingModuleTypeMapping<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    fn get_base_user_score(&self) -> BigUint<C::Api> {
+        match self {
+            StakingModuleTypeMapping::Invalid(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::CodingDivisionSfts(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::XBunnies(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::Bloodshed(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::Nosferatu(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::VestaXDAO(module) => module.get_base_user_score(),
+        }
+    }
+
+    fn get_final_user_score(&self) -> BigUint<<C>::Api> {
+        match self {
+            StakingModuleTypeMapping::Invalid(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::CodingDivisionSfts(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::XBunnies(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::Bloodshed(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::Nosferatu(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::VestaXDAO(module) => module.get_final_user_score(),
+        }
+    }
+
+    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
+        match self {
+            StakingModuleTypeMapping::Invalid(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::CodingDivisionSfts(module) => {
+                module.add_to_storage(nonce, amount)
+            }
+            StakingModuleTypeMapping::XBunnies(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::Bloodshed(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::Nosferatu(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::VestaXDAO(module) => module.add_to_storage(nonce, amount),
+        }
+    }
 }
