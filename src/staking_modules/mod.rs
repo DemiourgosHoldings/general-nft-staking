@@ -1,2 +1,3 @@
-pub mod staking_module_type;
 pub mod default;
+pub mod invalid;
+pub mod staking_module_type;

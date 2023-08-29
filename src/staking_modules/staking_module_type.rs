@@ -1,6 +1,6 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
-use super::default::DefaultStakingModule;
+use super::{default::DefaultStakingModule, invalid::InvalidStakingModule};
 
 multiversx_sc::derive_imports!();
 
@@ -19,7 +19,7 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    Invalid,
+    Invalid(InvalidStakingModule),
     CodingDivisionSfts(DefaultStakingModule<'a, C>),
     XBunnies(DefaultStakingModule<'a, C>),
     Bloodshed(DefaultStakingModule<'a, C>),
@@ -50,7 +50,9 @@ where
         token_identifier: TokenIdentifier<C::Api>,
     ) -> StakingModuleTypeMapping<'a, C> {
         match self {
-            StakingModuleType::Invalid => StakingModuleTypeMapping::Invalid,
+            StakingModuleType::Invalid => {
+                StakingModuleTypeMapping::Invalid(InvalidStakingModule::new())
+            }
             StakingModuleType::CodingDivisionSfts => StakingModuleTypeMapping::CodingDivisionSfts(
                 DefaultStakingModule::new(sc_ref, token_identifier),
             ),
