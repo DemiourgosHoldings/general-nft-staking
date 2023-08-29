@@ -1,9 +1,9 @@
-name = "empty"
-contract_trait = "EmptyContract"
-src_file = "empty.rs"
+name = "lib"
+contract_trait = "libContract"
+src_file = "lib.rs"
 rename_pairs = [
     [
-        "blockchain.set_current_dir_from_workspace(\"contracts/examples/empty\");",
+        "blockchain.set_current_dir_from_workspace(\"contracts/examples/lib\");",
         "// blockchain.set_current_dir_from_workspace(\"relative path to your workspace, if applicable\");",
     ],
 ]

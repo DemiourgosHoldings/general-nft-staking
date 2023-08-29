@@ -2,9 +2,14 @@
 
 multiversx_sc::imports!();
 
-/// An empty contract. To be used as a template when starting a new contract from scratch.
+pub mod staking_modules;
+pub mod storage;
+
+/// An lib contract. To be used as a template when starting a new contract from scratch.
 #[multiversx_sc::contract]
-pub trait NftStakingContract {
+pub trait NftStakingContract:
+    storage::config::ConfigModule + storage::score::ScoreStorageModule
+{
     #[init]
     fn init(&self) {}
 
