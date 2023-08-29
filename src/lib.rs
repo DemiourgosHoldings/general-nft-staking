@@ -3,6 +3,7 @@
 multiversx_sc::imports!();
 
 pub mod constants;
+pub mod staking_context;
 pub mod staking_modules;
 pub mod storage;
 pub mod types;
