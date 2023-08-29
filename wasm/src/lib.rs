@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            0
-// Async Callback (lib):               1
-// Total number of exported functions:   2
+// Endpoints:                           10
+// Async Callback (empty):               1
+// Total number of exported functions:  12
 
 #![no_std]
 
@@ -22,7 +22,17 @@ multiversx_sc_wasm_adapter::endpoints! {
     nft_staking
     (
         init => init
+        stake => stake
+        startUnbonding => start_unbonding
+        claimUnbonded => claim_unbonded
+        claimRewards => claim_rewards
+        getStakingPoolTypeConfiguration => stake_pool_type_configuration
+        getStakedNfts => staked_nfts
+        getUserDeb => user_deb
+        getBaseAssetScore => base_asset_score
+        getNonceAssetScore => nonce_asset_score
+        getFullSetScore => full_set_score
     )
 }
 
-multiversx_sc_wasm_adapter::async_callback_lib! {}
+multiversx_sc_wasm_adapter::async_callback_empty! {}

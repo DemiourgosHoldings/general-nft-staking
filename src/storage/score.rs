@@ -13,4 +13,8 @@ pub trait ScoreStorageModule {
         token_identifier: &TokenIdentifier,
         nonce: u64,
     ) -> SingleValueMapper<usize>;
+
+    #[view(getFullSetScore)]
+    #[storage_mapper("full_set_score")]
+    fn full_set_score(&self, token_identifier: &TokenIdentifier) -> SingleValueMapper<usize>;
 }

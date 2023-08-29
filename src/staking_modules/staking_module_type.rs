@@ -1,6 +1,9 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
-use super::{default::DefaultStakingModule, invalid::InvalidStakingModule};
+use super::{
+    coding_division_sft_staking_module::CodingDivisionSftStakingModule,
+    default::DefaultStakingModule, invalid::InvalidStakingModule,
+};
 
 multiversx_sc::derive_imports!();
 
@@ -20,7 +23,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
 {
     Invalid(InvalidStakingModule),
-    CodingDivisionSfts(DefaultStakingModule<'a, C>),
+    CodingDivisionSfts(CodingDivisionSftStakingModule<'a, C>),
     XBunnies(DefaultStakingModule<'a, C>),
     Bloodshed(DefaultStakingModule<'a, C>),
     Nosferatu(DefaultStakingModule<'a, C>),
@@ -54,7 +57,7 @@ where
                 StakingModuleTypeMapping::Invalid(InvalidStakingModule::new())
             }
             StakingModuleType::CodingDivisionSfts => StakingModuleTypeMapping::CodingDivisionSfts(
-                DefaultStakingModule::new(sc_ref, token_identifier),
+                CodingDivisionSftStakingModule::new(sc_ref, token_identifier),
             ),
             StakingModuleType::XBunnies => StakingModuleTypeMapping::XBunnies(
                 DefaultStakingModule::new(sc_ref, token_identifier),
