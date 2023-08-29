@@ -10,4 +10,15 @@ pub trait ConfigModule {
         &self,
         token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<StakingModuleType>;
+
+    #[view(getStakedNfts)]
+    #[storage_mapper("staked_nfts")]
+    fn staked_nfts(
+        &self,
+        token_identifier: &TokenIdentifier,
+    ) -> MapMapper<ManagedAddress, ManagedVec<u64>>;
+
+    #[view(getUserDeb)]
+    #[storage_mapper("user_deb")]
+    fn user_deb(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
 }
