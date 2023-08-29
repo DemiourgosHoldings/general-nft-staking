@@ -41,15 +41,19 @@ where
         let mut score = BigUint::zero();
         let base_score = BigUint::from(self.sc_ref.base_asset_score(&self.impl_token_id).get());
 
-        for nft_nonce in staked_nft_nonces.iter() {
+        for staked_nft_info in staked_nft_nonces.iter() {
             let asset_nonce_score = self
                 .sc_ref
-                .nonce_asset_score(&self.impl_token_id, nft_nonce);
+                .nonce_asset_score(&self.impl_token_id, staked_nft_info.nonce);
+
+            let unit_score;
             if !asset_nonce_score.is_empty() {
-                score += &BigUint::from(asset_nonce_score.get());
+                unit_score = BigUint::from(asset_nonce_score.get());
             } else {
-                score += &base_score;
+                unit_score = base_score.clone();
             }
+
+            score += &unit_score * &staked_nft_info.quantity;
         }
 
         score

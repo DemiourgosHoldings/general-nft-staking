@@ -1,4 +1,6 @@
-use crate::staking_modules::staking_module_type::StakingModuleType;
+use crate::{
+    staking_modules::staking_module_type::StakingModuleType, types::nonce_qty_pair::NonceQtyPair,
+};
 
 multiversx_sc::imports!();
 
@@ -16,7 +18,7 @@ pub trait ConfigModule {
     fn staked_nfts(
         &self,
         token_identifier: &TokenIdentifier,
-    ) -> MapMapper<ManagedAddress, ManagedVec<u64>>;
+    ) -> MapMapper<ManagedAddress, ManagedVec<NonceQtyPair<Self::Api>>>;
 
     #[view(getUserDeb)]
     #[storage_mapper("user_deb")]
