@@ -27,10 +27,6 @@ where
         }
     }
 
-    //TODO: implement this function correctly using constant value;
-    //TODO: find a way to assert if the current iteration nonce is part of the StakedNfts storage. Aim for something like array.filter(a => a.nonce === lookup_nonce)
-    //TODO: find the min quantity if all the nonces are part of the StakedNfts storage
-    //TODO: return 0 if one nonce is missing
     fn count_full_sets(&self, address: &ManagedAddress<C::Api>) -> BigUint<C::Api> {
         let staked_nft_nonces = self
             .sc_ref
@@ -43,7 +39,7 @@ where
         for set_nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
             let item = staked_nft_nonces.iter().find(|p| p.nonce == set_nonce);
             if item.is_none() {
-                continue;
+                return BigUint::zero();
             }
             let item_quantity = item.unwrap().quantity;
             if item_quantity < full_sets {
