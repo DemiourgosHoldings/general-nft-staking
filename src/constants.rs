@@ -1,0 +1,1 @@
+pub const DEB_DENOMINATION: u64 = 10_000;
