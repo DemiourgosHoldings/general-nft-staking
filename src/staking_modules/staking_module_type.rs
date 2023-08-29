@@ -1,3 +1,5 @@
+use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
+
 use super::default::DefaultStakingModule;
 
 multiversx_sc::derive_imports!();
@@ -30,7 +32,11 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    fn get_module(&self, sc_ref: &'a C) -> StakingModuleTypeMapping<'a, C>;
+    fn get_module(
+        &self,
+        sc_ref: &'a C,
+        token_identifier: TokenIdentifier<C::Api>,
+    ) -> StakingModuleTypeMapping<'a, C>;
 }
 
 impl<'a, C> StakingModuleTypeFactory<'a, C> for StakingModuleType
@@ -38,24 +44,37 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    fn get_module(&self, sc_ref: &'a C) -> StakingModuleTypeMapping<'a, C> {
+    fn get_module(
+        &self,
+        sc_ref: &'a C,
+        token_identifier: TokenIdentifier<C::Api>,
+    ) -> StakingModuleTypeMapping<'a, C> {
         match self {
             StakingModuleType::Invalid => StakingModuleTypeMapping::Invalid,
-            StakingModuleType::CodingDivisionSfts => {
-                StakingModuleTypeMapping::CodingDivisionSfts(DefaultStakingModule::new(sc_ref))
-            }
-            StakingModuleType::XBunnies => {
-                StakingModuleTypeMapping::XBunnies(DefaultStakingModule::new(sc_ref))
-            }
-            StakingModuleType::Bloodshed => {
-                StakingModuleTypeMapping::Bloodshed(DefaultStakingModule::new(sc_ref))
-            }
-            StakingModuleType::Nosferatu => {
-                StakingModuleTypeMapping::Nosferatu(DefaultStakingModule::new(sc_ref))
-            }
-            StakingModuleType::VestaXDAO => {
-                StakingModuleTypeMapping::VestaXDAO(DefaultStakingModule::new(sc_ref))
-            }
+            StakingModuleType::CodingDivisionSfts => StakingModuleTypeMapping::CodingDivisionSfts(
+                DefaultStakingModule::new(sc_ref, token_identifier),
+            ),
+            StakingModuleType::XBunnies => StakingModuleTypeMapping::XBunnies(
+                DefaultStakingModule::new(sc_ref, token_identifier),
+            ),
+            StakingModuleType::Bloodshed => StakingModuleTypeMapping::Bloodshed(
+                DefaultStakingModule::new(sc_ref, token_identifier),
+            ),
+            StakingModuleType::Nosferatu => StakingModuleTypeMapping::Nosferatu(
+                DefaultStakingModule::new(sc_ref, token_identifier),
+            ),
+            StakingModuleType::VestaXDAO => StakingModuleTypeMapping::VestaXDAO(
+                DefaultStakingModule::new(sc_ref, token_identifier),
+            ),
         }
     }
+}
+
+pub trait VestaStakingModule<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    fn get_base_user_score(&self, address: &ManagedAddress<C::Api>) -> BigUint<C::Api>;
+    fn get_final_user_score(&self, address: &ManagedAddress<C::Api>) -> BigUint<C::Api>;
 }
