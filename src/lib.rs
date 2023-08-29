@@ -2,9 +2,10 @@
 
 multiversx_sc::imports!();
 
+pub mod constants;
 pub mod staking_modules;
 pub mod storage;
-pub mod constants;
+pub mod types;
 
 /// An lib contract. To be used as a template when starting a new contract from scratch.
 #[multiversx_sc::contract]
