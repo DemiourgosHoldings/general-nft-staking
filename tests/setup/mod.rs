@@ -111,6 +111,18 @@ where
         Self::assert_tx_result(&tx_result, err_msg);
     }
 
+    pub fn claim_unbonded(&mut self, err_msg: &str) {
+        let tx_result = self.b_mock.execute_tx(
+            &self.user_address,
+            &self.contract_wrapper,
+            &rust_biguint!(0),
+            |sc| {
+                sc.claim_unbonded();
+            },
+        );
+        Self::assert_tx_result(&tx_result, err_msg);
+    }
+
     pub fn assert_user_score(&mut self, expected_score: u64) {
         let address = &self.user_address;
         self.b_mock
