@@ -66,6 +66,10 @@ where
 
     pub fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool {
         self.secure_rewards();
+        let initial_user_score = self
+            .sc_ref
+            .aggregated_user_staking_score(&self.caller)
+            .get();
 
         let unbonding_result = self.staking_module_impl.start_unbonding(payload.clone());
         if unbonding_result {
@@ -75,13 +79,14 @@ where
         }
 
         let new_user_score = self.staking_module_impl.get_final_user_score();
+        let score_diff = &initial_user_score - &new_user_score;
 
         self.sc_ref
             .aggregated_user_staking_score(&self.caller)
             .set(new_user_score);
         self.sc_ref
             .aggregated_staking_score()
-            .set(&self.aggregated_score - &self.aggregated_user_score);
+            .set(&self.aggregated_score - &score_diff);
 
         unbonding_result
     }

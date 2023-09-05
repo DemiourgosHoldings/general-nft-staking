@@ -38,7 +38,8 @@ pub trait NftStakingContract:
 
     #[endpoint(startUnbonding)]
     fn start_unbonding(&self, payload: StartUnbondingPayload<Self::Api>) {
-        self.require_user_has_staked_assets(&payload.token_identifier);
+        self.require_unbonding_is_valid(&payload);
+
         let context = StakingContext::new(self, &payload.token_identifier);
         let is_unbonding_successful = context.start_unbonding(payload);
         require!(is_unbonding_successful, ERR_FAILED_UNBONDING);
@@ -76,10 +77,11 @@ pub trait NftStakingContract:
         require!(other_token_id_payment.is_none(), ERR_ONE_TOKEN_ID_SUPPORTED);
     }
 
-    fn require_user_has_staked_assets(&self, token_identifier: &TokenIdentifier) {
+    fn require_unbonding_is_valid(&self, payload: &StartUnbondingPayload<Self::Api>) {
         require!(
-            self.staked_nfts(token_identifier)
-                .contains_key(&self.blockchain().get_caller()),
+            self.staked_nfts(&payload.token_identifier)
+                .contains_key(&self.blockchain().get_caller())
+                && !payload.is_empty(),
             ERR_FAILED_UNBONDING
         );
     }
