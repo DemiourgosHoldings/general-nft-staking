@@ -3,7 +3,7 @@ use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier}
 use super::{default::DefaultStakingModule, staking_module_type::VestaStakingModule};
 use crate::{
     constants::{DEB_DENOMINATION, VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE},
-    types::nonce_qty_pair::NonceQtyPair,
+    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
 };
 
 pub struct CodingDivisionSftStakingModule<'a, C>
@@ -118,5 +118,9 @@ where
         self.sc_ref
             .staked_nfts(&self.impl_token_id)
             .insert(self.user_address.clone(), staked_nfts);
+    }
+
+    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+        todo!()
     }
 }

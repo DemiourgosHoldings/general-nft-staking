@@ -1,6 +1,9 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier};
 
-use crate::{constants::DEB_DENOMINATION, types::nonce_qty_pair::NonceQtyPair};
+use crate::{
+    constants::DEB_DENOMINATION,
+    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
+};
 
 use super::staking_module_type::VestaStakingModule;
 
@@ -92,5 +95,9 @@ where
         self.sc_ref
             .staked_nfts(&self.impl_token_id)
             .insert(self.user_address.clone(), staked_nfts);
+    }
+
+    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+        todo!()
     }
 }

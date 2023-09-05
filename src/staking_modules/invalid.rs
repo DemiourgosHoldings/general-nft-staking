@@ -30,4 +30,11 @@ where
     }
 
     fn add_to_storage(&self, _nonce: u64, _amount: BigUint<C::Api>) {}
+
+    fn start_unbonding(
+        &self,
+        _payload: crate::types::start_unbonding_payload::StartUnbondingPayload<<C>::Api>,
+    ) -> bool {
+        true
+    }
 }

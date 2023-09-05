@@ -1,5 +1,7 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
+use crate::types::start_unbonding_payload::StartUnbondingPayload;
+
 use super::{
     coding_division_sft_staking_module::CodingDivisionSftStakingModule,
     default::DefaultStakingModule, invalid::InvalidStakingModule,
@@ -85,6 +87,7 @@ where
     fn get_base_user_score(&self) -> BigUint<C::Api>;
     fn get_final_user_score(&self) -> BigUint<C::Api>;
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>);
+    fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool;
 }
 
 impl<'a, C> VestaStakingModule<'a, C> for StakingModuleTypeMapping<'a, C>
@@ -124,6 +127,17 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::Nosferatu(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::VestaXDAO(module) => module.add_to_storage(nonce, amount),
+        }
+    }
+
+    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+        match self {
+            StakingModuleTypeMapping::Invalid(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::CodingDivisionSfts(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::XBunnies(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::Bloodshed(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::Nosferatu(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::VestaXDAO(module) => module.start_unbonding(payload),
         }
     }
 }

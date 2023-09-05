@@ -1,5 +1,8 @@
-use crate::staking_modules::staking_module_type::{
-    StakingModuleTypeFactory, StakingModuleTypeMapping, VestaStakingModule,
+use crate::{
+    staking_modules::staking_module_type::{
+        StakingModuleTypeFactory, StakingModuleTypeMapping, VestaStakingModule,
+    },
+    types::start_unbonding_payload::StartUnbondingPayload,
 };
 
 multiversx_sc::imports!();
@@ -57,6 +60,20 @@ where
         self.sc_ref
             .aggregated_staking_score()
             .set(&self.aggregated_score + &diff);
+    }
+
+    pub fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) {
+        self.secure_rewards();
+
+        self.staking_module_impl.start_unbonding(payload);
+        let new_user_score = self.staking_module_impl.get_final_user_score();
+
+        self.sc_ref
+            .aggregated_user_staking_score(&self.caller)
+            .set(new_user_score);
+        self.sc_ref
+            .aggregated_staking_score()
+            .set(&self.aggregated_score - &self.aggregated_user_score);
     }
 
     fn secure_rewards(&self) {

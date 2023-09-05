@@ -1,6 +1,7 @@
 #![no_std]
 
 use staking_context::StakingContext;
+use types::start_unbonding_payload::StartUnbondingPayload;
 
 multiversx_sc::imports!();
 
@@ -28,11 +29,9 @@ pub trait NftStakingContract:
     }
 
     #[endpoint(startUnbonding)]
-    fn start_unbonding(
-        &self,
-        _token_identifier: TokenIdentifier,
-        _nonces: MultiValueManagedVec<u64>,
-    ) {
+    fn start_unbonding(&self, payload: StartUnbondingPayload<Self::Api>) {
+        let context = StakingContext::new(self, &payload.token_identifier);
+        context.start_unbonding(payload);
     }
 
     #[endpoint(claimUnbonded)]
