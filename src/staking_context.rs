@@ -56,7 +56,7 @@ where
             .set(new_user_score);
         self.sc_ref
             .aggregated_staking_score()
-            .set(&self.aggregated_score - &diff);
+            .set(&self.aggregated_score + &diff);
     }
 
     fn secure_rewards(&self) {
