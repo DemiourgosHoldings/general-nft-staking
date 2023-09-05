@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           13
+// Endpoints:                           15
 // Async Callback (empty):               1
-// Total number of exported functions:  15
+// Total number of exported functions:  17
 
 #![no_std]
 
@@ -27,14 +27,16 @@ multiversx_sc_wasm_adapter::endpoints! {
         claimUnbonded => claim_unbonded
         claimRewards => claim_rewards
         getStakingPoolTypeConfiguration => stake_pool_type_configuration
+        getUnbondingTimePenalty => unbonding_time_penalty
+        getBaseAssetScore => base_asset_score
+        getNonceAssetScore => nonce_asset_score
+        getFullSetScore => full_set_score
         getStakedNfts => staked_nfts
         getUserDeb => user_deb
         getAggregatedStakingScore => aggregated_staking_score
         getAggregatedUserStakingScore => aggregated_user_staking_score
         getPendingRewards => pending_rewards
-        getBaseAssetScore => base_asset_score
-        getNonceAssetScore => nonce_asset_score
-        getFullSetScore => full_set_score
+        getUnbondingAssets => unbonding_assets
     )
 }
 

@@ -37,7 +37,8 @@ pub trait NftStakingContract:
     #[endpoint(startUnbonding)]
     fn start_unbonding(&self, payload: StartUnbondingPayload<Self::Api>) {
         let context = StakingContext::new(self, &payload.token_identifier);
-        context.start_unbonding(payload);
+        let is_unbonding_successful = context.start_unbonding(payload);
+        require!(is_unbonding_successful, "Unbonding failed");
     }
 
     #[endpoint(claimUnbonded)]

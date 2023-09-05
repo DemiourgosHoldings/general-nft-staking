@@ -64,10 +64,16 @@ where
             .set(&self.aggregated_score + &diff);
     }
 
-    pub fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) {
+    pub fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool {
         self.secure_rewards();
 
-        self.staking_module_impl.start_unbonding(payload);
+        let unbonding_result = self.staking_module_impl.start_unbonding(payload.clone());
+        if unbonding_result {
+            self.sc_ref
+                .unbonding_assets(&self.caller)
+                .insert(self.sc_ref.blockchain().get_block_timestamp(), payload);
+        }
+
         let new_user_score = self.staking_module_impl.get_final_user_score();
 
         self.sc_ref
@@ -76,6 +82,8 @@ where
         self.sc_ref
             .aggregated_staking_score()
             .set(&self.aggregated_score - &self.aggregated_user_score);
+
+        unbonding_result
     }
 
     fn secure_rewards(&self) {
