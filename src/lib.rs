@@ -70,6 +70,16 @@ pub trait NftStakingContract:
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {}
 
+    #[view(getPendingReward)]
+    fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
+        BigUint::zero()
+    }
+
+    #[only_owner]
+    #[payable("*")]
+    #[endpoint(distributeReward)]
+    fn distribute_reward(&self) {}
+
     fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {
         let token_id = payments.get(0).token_identifier.clone();
         let other_token_id_payment = payments.iter().find(|p| p.token_identifier != token_id);

@@ -12,6 +12,7 @@ use nft_staking::NftStakingContract;
 
 use self::constants::{
     NO_ERR_MSG, POOL1_QUANTITY_PER_NONCE, POOL1_TOKEN_ID, POOL2_QUANTITY_PER_NONCE, POOL2_TOKEN_ID,
+    REWARD_TOKEN_ID,
 };
 use self::types::{NonceQtyPair, TransferAssetType, TransferAssetTypeParserVec};
 use nft_staking::types::nonce_qty_pair::NonceQtyPair as NonceQtyPairSc;
@@ -59,7 +60,7 @@ where
             })
             .assert_ok();
 
-        Self::add_asset_balance(&mut b_mock, &user_address);
+        Self::add_asset_balance(&mut b_mock, &user_address, &owner_address);
 
         Self {
             b_mock,
@@ -190,13 +191,46 @@ where
             .assert_ok();
     }
 
-    fn add_asset_balance(b_mock: &mut BlockchainStateWrapper, address: &Address) {
+    pub fn distribute_reward(&mut self, amount: u64, err_msg: &str) {
+        let tx_result = self.b_mock.execute_esdt_transfer(
+            &self.owner_address,
+            &self.contract_wrapper,
+            REWARD_TOKEN_ID,
+            0,
+            &rust_biguint!(amount),
+            |sc| {
+                sc.distribute_reward();
+            },
+        );
+        Self::assert_tx_result(&tx_result, err_msg);
+    }
+
+    pub fn assert_pending_reward(&mut self, expected_amount: u64) {
+        let address = self.owner_address.clone();
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let pending_rewards = sc.get_pending_reward(managed_address!(&address));
+                assert_eq!(managed_biguint!(expected_amount), pending_rewards);
+            })
+            .assert_ok();
+    }
+
+    fn add_asset_balance(
+        b_mock: &mut BlockchainStateWrapper,
+        address: &Address,
+        owner_address: &Address,
+    ) {
         let pool_1_quantity = rust_biguint!(POOL1_QUANTITY_PER_NONCE);
         let pool_2_quantity = rust_biguint!(POOL2_QUANTITY_PER_NONCE);
         for i in 0..100 {
             b_mock.set_nft_balance(address, POOL1_TOKEN_ID, i, &pool_1_quantity, b"");
             b_mock.set_nft_balance(address, POOL2_TOKEN_ID, i, &pool_2_quantity, b"");
         }
+        b_mock.set_esdt_balance(
+            owner_address,
+            REWARD_TOKEN_ID,
+            &rust_biguint!(1_000_000_000),
+        );
     }
 
     fn assert_tx_result(tx_result: &TxResult, err_msg: &str) {
