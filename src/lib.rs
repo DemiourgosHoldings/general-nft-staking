@@ -1,6 +1,6 @@
 #![no_std]
 
-use constants::DEFAULT_UNBONDING_TIME_PENALTY;
+use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 
@@ -38,7 +38,7 @@ pub trait NftStakingContract:
     fn start_unbonding(&self, payload: StartUnbondingPayload<Self::Api>) {
         let context = StakingContext::new(self, &payload.token_identifier);
         let is_unbonding_successful = context.start_unbonding(payload);
-        require!(is_unbonding_successful, "Unbonding failed");
+        require!(is_unbonding_successful, ERR_FAILED_UNBONDING);
     }
 
     #[endpoint(claimUnbonded)]
@@ -51,9 +51,6 @@ pub trait NftStakingContract:
         let token_id = payments.get(0).token_identifier.clone();
         let other_token_id_payment = payments.iter().find(|p| p.token_identifier != token_id);
 
-        require!(
-            other_token_id_payment.is_none(),
-            "Only one token id is allowed per TX"
-        );
+        require!(other_token_id_payment.is_none(), ERR_ONE_TOKEN_ID_SUPPORTED);
     }
 }
