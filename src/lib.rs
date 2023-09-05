@@ -4,6 +4,8 @@ use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TO
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 
+use crate::constants::ERR_NOTHING_TO_CLAIM;
+
 multiversx_sc::imports!();
 
 pub mod constants;
@@ -43,7 +45,26 @@ pub trait NftStakingContract:
     }
 
     #[endpoint(claimUnbonded)]
-    fn claim_unbonded(&self) {}
+    fn claim_unbonded(&self) {
+        let caller = self.blockchain().get_caller();
+        let block_timestamp = self.blockchain().get_block_timestamp();
+        let unbonding_time_penalty = self.unbonding_time_penalty().get();
+
+        let mut payments = ManagedVec::new();
+        for unbonding_batch in self.unbonding_assets(&caller).iter() {
+            let (start_unbonding_timestamp, unbonding_payload) = unbonding_batch;
+            if start_unbonding_timestamp + unbonding_time_penalty > block_timestamp {
+                continue;
+            }
+
+            let batch_payments = unbonding_payload.get_payments();
+            payments.extend(&batch_payments);
+        }
+
+        require!(payments.len() > 0, ERR_NOTHING_TO_CLAIM);
+
+        self.send().direct_multi(&caller, &payments);
+    }
 
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {}

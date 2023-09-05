@@ -29,4 +29,17 @@ impl<M: ManagedTypeApi> StartUnbondingPayload<M> {
         }
         item.unwrap().quantity
     }
+
+    pub fn get_payments(&self) -> ManagedVec<M, EsdtTokenPayment<M>> {
+        let mut payments = ManagedVec::new();
+        for item in self.items.iter() {
+            payments.push(EsdtTokenPayment::new(
+                self.token_identifier.clone(),
+                item.nonce,
+                item.quantity,
+            ));
+        }
+
+        payments
+    }
 }
