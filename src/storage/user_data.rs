@@ -34,4 +34,8 @@ pub trait UserDataStorageModule {
         &self,
         address: &ManagedAddress,
     ) -> MapMapper<u64, StartUnbondingPayload<Self::Api>>;
+
+    #[view(getLastUpdateTimestamp)]
+    #[storage_mapper("last_update_timestamp")]
+    fn last_update_timestamp(&self, address: &ManagedAddress) -> SingleValueMapper<u64>;
 }

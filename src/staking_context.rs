@@ -98,7 +98,10 @@ where
             false => self.sc_ref.pending_rewards(&self.caller).get(),
         };
 
-        //TODO: reset staking timestamp
+        self.sc_ref
+            .last_update_timestamp(&self.caller)
+            .set(&self.sc_ref.blockchain().get_block_timestamp());
+
         self.sc_ref
             .pending_rewards(&self.caller)
             .set(rewards + stored_rewards);
