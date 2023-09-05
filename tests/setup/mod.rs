@@ -1,4 +1,4 @@
-use multiversx_sc::types::Address;
+use multiversx_sc::types::{Address, ManagedVec};
 #[allow(deprecated)]
 use multiversx_sc_scenario::whitebox_legacy::{BlockchainStateWrapper, ContractObjWrapper};
 use multiversx_sc_scenario::{managed_address, managed_biguint, managed_token_id, DebugApi};
@@ -7,12 +7,14 @@ use nft_staking::staking_modules::staking_module_type::StakingModuleType;
 use nft_staking::storage::config::ConfigModule;
 use nft_staking::storage::score::ScoreStorageModule;
 use nft_staking::storage::user_data::UserDataStorageModule;
+use nft_staking::types::start_unbonding_payload::StartUnbondingPayload;
 use nft_staking::NftStakingContract;
 
 use self::constants::{
     NO_ERR_MSG, POOL1_QUANTITY_PER_NONCE, POOL1_TOKEN_ID, POOL2_QUANTITY_PER_NONCE, POOL2_TOKEN_ID,
 };
-use self::types::{TransferAssetType, TransferAssetTypeParserVec};
+use self::types::{NonceQtyPair, TransferAssetType, TransferAssetTypeParserVec};
+use nft_staking::types::nonce_qty_pair::NonceQtyPair as NonceQtyPairSc;
 
 const WASM_PATH: &str = "../../output/nft-staking.wasm";
 pub mod constants;
@@ -75,6 +77,35 @@ where
             &parsed_transfers,
             |sc| {
                 sc.stake();
+            },
+        );
+        Self::assert_tx_result(&tx_result, err_msg);
+    }
+
+    pub fn start_unbonding(
+        &mut self,
+        token_id: &[u8],
+        nonce_qty_pairs: &[NonceQtyPair],
+        err_msg: &str,
+    ) {
+        let tx_result = self.b_mock.execute_tx(
+            &self.user_address,
+            &self.contract_wrapper,
+            &rust_biguint!(0),
+            |sc| {
+                let mut nonce_qty_vec = ManagedVec::new();
+                for nonce_qty_pair in nonce_qty_pairs {
+                    nonce_qty_vec.push(NonceQtyPairSc {
+                        nonce: nonce_qty_pair.0,
+                        quantity: managed_biguint!(nonce_qty_pair.1),
+                    });
+                }
+                let payload = StartUnbondingPayload {
+                    token_identifier: managed_token_id!(token_id),
+                    items: nonce_qty_vec,
+                };
+
+                sc.start_unbonding(payload);
             },
         );
         Self::assert_tx_result(&tx_result, err_msg);

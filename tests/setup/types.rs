@@ -1,6 +1,7 @@
 use multiversx_sc_scenario::{rust_biguint, testing_framework::TxTokenTransfer};
 
 pub type TransferAssetType<'a> = (&'a [u8], u64, u64);
+pub type NonceQtyPair = (u64, u64);
 
 pub fn new_nft_transfer<'a>(id: &'a [u8], nonce: u64, amount: u64) -> TransferAssetType<'a> {
     (id, nonce, amount)
