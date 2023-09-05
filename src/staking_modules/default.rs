@@ -98,6 +98,35 @@ where
     }
 
     fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
-        todo!()
+        let staked_nfts = self
+            .sc_ref
+            .staked_nfts(&payload.token_identifier)
+            .remove(&self.user_address)
+            .unwrap_or_else(|| ManagedVec::new());
+
+        let mut remaining_staked_nfts = ManagedVec::new();
+        for staked_nft in staked_nfts.iter() {
+            let unstake_nonce_quantity = payload.get_nonce_quantity(staked_nft.nonce);
+            if &unstake_nonce_quantity == &BigUint::zero()
+                || &unstake_nonce_quantity > &staked_nft.quantity
+            {
+                return false;
+            }
+
+            if &staked_nft.quantity == &unstake_nonce_quantity {
+                continue;
+            }
+
+            remaining_staked_nfts.push(NonceQtyPair {
+                nonce: staked_nft.nonce,
+                quantity: &staked_nft.quantity - &unstake_nonce_quantity,
+            });
+        }
+
+        self.sc_ref
+            .staked_nfts(&payload.token_identifier)
+            .insert(self.user_address.clone(), remaining_staked_nfts);
+
+        true
     }
 }

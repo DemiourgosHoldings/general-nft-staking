@@ -121,6 +121,6 @@ where
     }
 
     fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
-        todo!()
+        self.default_impl.start_unbonding(payload)
     }
 }

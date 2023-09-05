@@ -21,4 +21,12 @@ impl<M: ManagedTypeApi> StartUnbondingPayload<M> {
             items,
         }
     }
+
+    pub fn get_nonce_quantity(&self, nonce: u64) -> BigUint<M> {
+        let item = self.items.iter().find(|p| p.nonce == nonce);
+        if item.is_none() {
+            return BigUint::zero();
+        }
+        item.unwrap().quantity
+    }
 }
