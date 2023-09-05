@@ -1,5 +1,7 @@
 #![no_std]
 
+use staking_context::StakingContext;
+
 multiversx_sc::imports!();
 
 pub mod constants;
@@ -18,7 +20,12 @@ pub trait NftStakingContract:
 
     #[payable("*")]
     #[endpoint(stake)]
-    fn stake(&self) {}
+    fn stake(&self) {
+        let payments = self.call_value().all_esdt_transfers();
+        self.require_same_token_id(&payments);
+        let context = StakingContext::new(self, &payments.get(0).token_identifier);
+        context.add_to_stake(&payments);
+    }
 
     #[endpoint(startUnbonding)]
     fn start_unbonding(
