@@ -106,6 +106,7 @@ where
             .staked_nfts(&payload.token_identifier)
             .remove(&self.user_address)
             .unwrap_or_else(|| ManagedVec::new());
+        let initial_staked_nfts_count = staked_nfts.len();
 
         let mut remaining_staked_nfts = ManagedVec::new();
         for staked_nft in staked_nfts.iter() {
@@ -129,10 +130,11 @@ where
             });
         }
 
+        let remaining_staked_nfts_count = remaining_staked_nfts.len();
         self.sc_ref
             .staked_nfts(&payload.token_identifier)
             .insert(self.user_address.clone(), remaining_staked_nfts);
 
-        true
+        initial_staked_nfts_count != remaining_staked_nfts_count
     }
 }
