@@ -11,6 +11,7 @@ pub struct StakingContext<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     sc_ref: &'a C,
     aggregated_score: BigUint<C::Api>,
@@ -23,6 +24,7 @@ impl<'a, C> StakingContext<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     pub fn new(sc_ref: &'a C, payment_token_id: &TokenIdentifier<C::Api>) -> Self {
         let caller = sc_ref.blockchain().get_caller();

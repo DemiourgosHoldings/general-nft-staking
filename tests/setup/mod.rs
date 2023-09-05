@@ -6,6 +6,7 @@ use multiversx_sc_scenario::{rust_biguint, testing_framework::TxResult};
 use nft_staking::staking_modules::staking_module_type::StakingModuleType;
 use nft_staking::storage::config::ConfigModule;
 use nft_staking::storage::score::ScoreStorageModule;
+use nft_staking::storage::user_data::UserDataStorageModule;
 use nft_staking::NftStakingContract;
 
 use self::constants::{

@@ -14,7 +14,9 @@ pub mod types;
 /// An lib contract. To be used as a template when starting a new contract from scratch.
 #[multiversx_sc::contract]
 pub trait NftStakingContract:
-    storage::config::ConfigModule + storage::score::ScoreStorageModule
+    storage::config::ConfigModule
+    + storage::score::ScoreStorageModule
+    + storage::user_data::UserDataStorageModule
 {
     #[init]
     fn init(&self) {}

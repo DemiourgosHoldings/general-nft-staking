@@ -20,6 +20,7 @@ impl<'a, C> VestaStakingModule<'a, C> for InvalidStakingModule<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self) -> BigUint<C::Api> {
         BigUint::zero()

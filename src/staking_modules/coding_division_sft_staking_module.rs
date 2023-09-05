@@ -10,6 +10,7 @@ pub struct CodingDivisionSftStakingModule<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     sc_ref: &'a C,
     impl_token_id: TokenIdentifier<C::Api>,
@@ -21,6 +22,7 @@ impl<'a, C> CodingDivisionSftStakingModule<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     pub fn new(
         sc_ref: &'a C,
@@ -65,6 +67,7 @@ impl<'a, C> VestaStakingModule<'a, C> for CodingDivisionSftStakingModule<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self) -> BigUint<C::Api> {
         let default_base_score = self.default_impl.get_base_user_score();

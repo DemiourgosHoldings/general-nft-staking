@@ -23,6 +23,7 @@ pub enum StakingModuleTypeMapping<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     Invalid(InvalidStakingModule<'a, C>),
     CodingDivisionSfts(CodingDivisionSftStakingModule<'a, C>),
@@ -36,6 +37,7 @@ pub trait StakingModuleTypeFactory<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_module(
         &self,
@@ -49,6 +51,7 @@ impl<'a, C> StakingModuleTypeFactory<'a, C> for StakingModuleType
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_module(
         &self,
@@ -83,6 +86,7 @@ pub trait VestaStakingModule<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self) -> BigUint<C::Api>;
     fn get_final_user_score(&self) -> BigUint<C::Api>;
@@ -94,6 +98,7 @@ impl<'a, C> VestaStakingModule<'a, C> for StakingModuleTypeMapping<'a, C>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self) -> BigUint<C::Api> {
         match self {
