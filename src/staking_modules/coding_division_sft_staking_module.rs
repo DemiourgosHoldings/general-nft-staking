@@ -118,6 +118,5 @@ where
         self.sc_ref
             .staked_nfts(&self.impl_token_id)
             .insert(self.user_address.clone(), staked_nfts);
-        todo!();
     }
 }
