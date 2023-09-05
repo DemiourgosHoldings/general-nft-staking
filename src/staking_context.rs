@@ -3,6 +3,7 @@ use crate::{
         StakingModuleTypeFactory, StakingModuleTypeMapping, VestaStakingModule,
     },
     types::start_unbonding_payload::StartUnbondingPayload,
+    utils::get_unstored_pending_rewards,
 };
 
 multiversx_sc::imports!();
@@ -98,9 +99,16 @@ where
             false => self.sc_ref.pending_rewards(&self.caller).get(),
         };
 
-        self.sc_ref
-            .last_update_timestamp(&self.caller)
-            .set(&self.sc_ref.blockchain().get_block_timestamp());
+        let block_epoch = self.sc_ref.blockchain().get_block_epoch();
+        if self.sc_ref.reward_rate(block_epoch).is_empty() {
+            self.sc_ref
+                .last_claimed_epoch(&self.caller)
+                .set(&block_epoch - 1);
+        } else {
+            self.sc_ref
+                .last_claimed_epoch(&self.caller)
+                .set(block_epoch);
+        }
 
         self.sc_ref
             .pending_rewards(&self.caller)
@@ -108,6 +116,6 @@ where
     }
 
     fn compute_rewards(&self) -> BigUint<C::Api> {
-        BigUint::zero()
+        get_unstored_pending_rewards(self.sc_ref, &self.caller)
     }
 }

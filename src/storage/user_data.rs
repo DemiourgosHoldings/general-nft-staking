@@ -35,7 +35,15 @@ pub trait UserDataStorageModule {
         address: &ManagedAddress,
     ) -> MapMapper<u64, StartUnbondingPayload<Self::Api>>;
 
-    #[view(getLastUpdateTimestamp)]
-    #[storage_mapper("last_update_timestamp")]
-    fn last_update_timestamp(&self, address: &ManagedAddress) -> SingleValueMapper<u64>;
+    #[view(getLastClaimedEpoch)]
+    #[storage_mapper("last_claimed_epoch")]
+    fn last_claimed_epoch(&self, address: &ManagedAddress) -> SingleValueMapper<u64>;
+
+    #[view(getRewardRate)]
+    #[storage_mapper("reward_rate")]
+    fn reward_rate(&self, epoch: u64) -> SingleValueMapper<BigUint>;
+
+    #[view(getRewardDistributionTimestamp)]
+    #[storage_mapper("reward_distribution_timestamp")]
+    fn reward_distribution_timestamp(&self, epoch: u64) -> SingleValueMapper<u64>;
 }

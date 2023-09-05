@@ -60,6 +60,8 @@ where
             })
             .assert_ok();
 
+        b_mock.set_block_epoch(1);
+
         Self::add_asset_balance(&mut b_mock, &user_address, &owner_address);
 
         Self {

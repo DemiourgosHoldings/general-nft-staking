@@ -3,8 +3,9 @@
 use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
+use utils::get_unstored_pending_rewards;
 
-use crate::constants::ERR_NOTHING_TO_CLAIM;
+use crate::constants::{ERR_NOTHING_TO_CLAIM, ERR_REWARD_ALREADY_DISTRIBUTED};
 
 multiversx_sc::imports!();
 
@@ -13,6 +14,7 @@ pub mod staking_context;
 pub mod staking_modules;
 pub mod storage;
 pub mod types;
+pub mod utils;
 
 /// An lib contract. To be used as a template when starting a new contract from scratch.
 #[multiversx_sc::contract]
@@ -72,13 +74,33 @@ pub trait NftStakingContract:
 
     #[view(getPendingReward)]
     fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
-        BigUint::zero()
+        let not_stored_rewards = get_unstored_pending_rewards(self, &address);
+        let stored_rewards = match self.pending_rewards(&address).is_empty() {
+            false => self.pending_rewards(&address).get(),
+            true => BigUint::zero(),
+        };
+
+        not_stored_rewards + stored_rewards
     }
 
     #[only_owner]
     #[payable("*")]
-    #[endpoint(distributeReward)]
-    fn distribute_reward(&self) {}
+    #[endpoint(distributeGeneralReward)]
+    fn distribute_reward(&self) {
+        let total_score = self.aggregated_staking_score().get();
+        let payment = self.call_value().single_esdt();
+
+        let block_epoch = self.blockchain().get_block_epoch();
+        let block_timestamp = self.blockchain().get_block_timestamp();
+
+        self.require_reward_not_distributed(block_epoch);
+
+        let reward_rate = payment.amount / total_score;
+
+        self.reward_rate(block_epoch).set(reward_rate);
+        self.reward_distribution_timestamp(block_epoch)
+            .set(&block_timestamp);
+    }
 
     fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {
         let token_id = payments.get(0).token_identifier.clone();
@@ -93,6 +115,14 @@ pub trait NftStakingContract:
                 .contains_key(&self.blockchain().get_caller())
                 && !payload.is_empty(),
             ERR_FAILED_UNBONDING
+        );
+    }
+
+    fn require_reward_not_distributed(&self, epoch: u64) {
+        require!(
+            self.reward_distribution_timestamp(epoch).is_empty()
+                && self.reward_rate(epoch).is_empty(),
+            ERR_REWARD_ALREADY_DISTRIBUTED
         );
     }
 }
