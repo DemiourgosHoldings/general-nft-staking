@@ -1,5 +1,6 @@
 #![no_std]
 
+use constants::DEFAULT_UNBONDING_TIME_PENALTY;
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 
@@ -19,7 +20,10 @@ pub trait NftStakingContract:
     + storage::user_data::UserDataStorageModule
 {
     #[init]
-    fn init(&self) {}
+    fn init(&self) {
+        self.unbonding_time_penalty()
+            .set_if_empty(&DEFAULT_UNBONDING_TIME_PENALTY);
+    }
 
     #[payable("*")]
     #[endpoint(stake)]

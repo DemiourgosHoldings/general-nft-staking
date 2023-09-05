@@ -9,4 +9,8 @@ pub trait ConfigModule {
         &self,
         token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<StakingModuleType>;
+
+    #[view(getUnbondingTimePenalty)]
+    #[storage_mapper("unbonding_time_penalty")]
+    fn unbonding_time_penalty(&self) -> SingleValueMapper<u64>;
 }

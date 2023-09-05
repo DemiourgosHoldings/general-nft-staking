@@ -1,4 +1,4 @@
-use crate::types::nonce_qty_pair::NonceQtyPair;
+use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
 
 multiversx_sc::imports!();
 
@@ -27,4 +27,11 @@ pub trait UserDataStorageModule {
     #[view(getPendingRewards)]
     #[storage_mapper("pending_rewards")]
     fn pending_rewards(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
+
+    #[view(getUnbondingAssets)]
+    #[storage_mapper("unbonding_assets")]
+    fn unbonding_assets(
+        &self,
+        address: &ManagedAddress,
+    ) -> MapMapper<u64, StartUnbondingPayload<Self::Api>>;
 }
