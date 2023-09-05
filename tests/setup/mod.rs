@@ -208,7 +208,7 @@ where
     }
 
     pub fn assert_pending_reward(&mut self, expected_amount: u64) {
-        let address = self.owner_address.clone();
+        let address = self.user_address.clone();
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
                 let pending_rewards = sc.get_pending_reward(managed_address!(&address));
