@@ -1,8 +1,11 @@
 use multiversx_sc::types::Address;
 #[allow(deprecated)]
 use multiversx_sc_scenario::whitebox_legacy::{BlockchainStateWrapper, ContractObjWrapper};
-use multiversx_sc_scenario::DebugApi;
+use multiversx_sc_scenario::{managed_address, managed_biguint, managed_token_id, DebugApi};
 use multiversx_sc_scenario::{rust_biguint, testing_framework::TxResult};
+use nft_staking::staking_modules::staking_module_type::StakingModuleType;
+use nft_staking::storage::config::ConfigModule;
+use nft_staking::storage::score::ScoreStorageModule;
 use nft_staking::NftStakingContract;
 
 use self::constants::{
@@ -48,6 +51,8 @@ where
         b_mock
             .execute_tx(&owner_address, &contract_wrapper, &rust_zero, |sc| {
                 sc.init();
+                sc.base_asset_score(&managed_token_id!(POOL1_TOKEN_ID))
+                    .set(1);
             })
             .assert_ok();
 
@@ -72,6 +77,73 @@ where
             },
         );
         Self::assert_tx_result(&tx_result, err_msg);
+    }
+
+    pub fn assert_user_score(&mut self, expected_score: u64) {
+        let address = &self.user_address;
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let user_score = sc
+                    .aggregated_user_staking_score(&managed_address!(address))
+                    .get();
+                assert_eq!(managed_biguint!(expected_score), user_score);
+            })
+            .assert_ok();
+    }
+
+    pub fn set_token_score(&mut self, token_id: &[u8], score: usize) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.base_asset_score(&managed_token_id!(token_id))
+                        .set(&score);
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn set_token_nonce_score(&mut self, token_id: &[u8], nonce: u64, score: usize) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.nonce_asset_score(&managed_token_id!(token_id), nonce)
+                        .set(&score);
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn set_full_set_score(&mut self, token_id: &[u8], score: usize) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.full_set_score(&managed_token_id!(token_id)).set(&score);
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn set_stake_pool_type(&mut self, token_id: &[u8], pool_type: StakingModuleType) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.stake_pool_type_configuration(&managed_token_id!(token_id))
+                        .set(&pool_type);
+                },
+            )
+            .assert_ok();
     }
 
     fn add_asset_balance(b_mock: &mut BlockchainStateWrapper, address: &Address) {
