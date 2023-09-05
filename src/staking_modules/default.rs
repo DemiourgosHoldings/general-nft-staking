@@ -110,9 +110,12 @@ where
         let mut remaining_staked_nfts = ManagedVec::new();
         for staked_nft in staked_nfts.iter() {
             let unstake_nonce_quantity = payload.get_nonce_quantity(staked_nft.nonce);
-            if &unstake_nonce_quantity == &BigUint::zero()
-                || &unstake_nonce_quantity > &staked_nft.quantity
-            {
+            if &unstake_nonce_quantity == &BigUint::zero() {
+                remaining_staked_nfts.push(staked_nft);
+                continue;
+            }
+
+            if &unstake_nonce_quantity > &staked_nft.quantity {
                 return false;
             }
 
