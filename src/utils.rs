@@ -24,3 +24,27 @@ where
 
     pending_reward
 }
+
+pub fn secure_rewards<'a, C>(sc_ref: &'a C, address: &ManagedAddress<C::Api>)
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let pending_unstored_rewards = get_unstored_pending_rewards(sc_ref, address);
+    let stored_rewards = match sc_ref.pending_rewards(address).is_empty() {
+        true => BigUint::zero(),
+        false => sc_ref.pending_rewards(address).get(),
+    };
+
+    let block_epoch = sc_ref.blockchain().get_block_epoch();
+    if sc_ref.reward_rate(block_epoch).is_empty() {
+        sc_ref.last_claimed_epoch(address).set(&block_epoch - 1);
+    } else {
+        sc_ref.last_claimed_epoch(address).set(block_epoch);
+    }
+
+    sc_ref
+        .pending_rewards(address)
+        .set(pending_unstored_rewards + stored_rewards);
+}
