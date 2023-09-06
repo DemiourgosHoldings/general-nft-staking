@@ -5,25 +5,24 @@ use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 use utils::{get_unstored_pending_rewards, secure_rewards};
 
-use crate::constants::{
-    ERR_INVALID_REWARD_TOKEN_ID, ERR_NOTHING_TO_CLAIM, ERR_REWARD_ALREADY_DISTRIBUTED,
-};
+use crate::constants::ERR_NOTHING_TO_CLAIM;
 
 multiversx_sc::imports!();
 
 pub mod constants;
+pub mod owner;
 pub mod staking_context;
 pub mod staking_modules;
 pub mod storage;
 pub mod types;
 pub mod utils;
 
-/// An lib contract. To be used as a template when starting a new contract from scratch.
 #[multiversx_sc::contract]
 pub trait NftStakingContract:
     storage::config::ConfigModule
     + storage::score::ScoreStorageModule
     + storage::user_data::UserDataStorageModule
+    + owner::OwnerModule
 {
     #[init]
     fn init(&self, reward_token_identifier: TokenIdentifier) {
@@ -100,27 +99,6 @@ pub trait NftStakingContract:
         not_stored_rewards + stored_rewards
     }
 
-    #[only_owner]
-    #[payable("*")]
-    #[endpoint(distributeGeneralReward)]
-    fn distribute_reward(&self) {
-        let total_score = self.aggregated_staking_score().get();
-        let payment = self.call_value().single_esdt();
-
-        self.require_token_is_reward_token(&payment.token_identifier);
-
-        let block_epoch = self.blockchain().get_block_epoch();
-        let block_timestamp = self.blockchain().get_block_timestamp();
-
-        self.require_reward_not_distributed(block_epoch);
-
-        let reward_rate = payment.amount / total_score;
-
-        self.reward_rate(block_epoch).set(reward_rate);
-        self.reward_distribution_timestamp(block_epoch)
-            .set(&block_timestamp);
-    }
-
     fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {
         let token_id = payments.get(0).token_identifier.clone();
         let other_token_id_payment = payments.iter().find(|p| p.token_identifier != token_id);
@@ -134,21 +112,6 @@ pub trait NftStakingContract:
                 .contains_key(&self.blockchain().get_caller())
                 && !payload.is_empty(),
             ERR_FAILED_UNBONDING
-        );
-    }
-
-    fn require_reward_not_distributed(&self, epoch: u64) {
-        require!(
-            self.reward_distribution_timestamp(epoch).is_empty()
-                && self.reward_rate(epoch).is_empty(),
-            ERR_REWARD_ALREADY_DISTRIBUTED
-        );
-    }
-
-    fn require_token_is_reward_token(&self, incoming_token_identifier: &TokenIdentifier) {
-        require!(
-            &self.reward_token_identifier().get() == incoming_token_identifier,
-            ERR_INVALID_REWARD_TOKEN_ID
         );
     }
 }

@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           21
+// Endpoints:                           20
 // Async Callback (empty):               1
-// Total number of exported functions:  23
+// Total number of exported functions:  22
 
 #![no_std]
 
@@ -27,7 +27,6 @@ multiversx_sc_wasm_adapter::endpoints! {
         claimUnbonded => claim_unbonded
         claimRewards => claim_rewards
         getPendingReward => get_pending_reward
-        distributeGeneralReward => distribute_reward
         getStakingPoolTypeConfiguration => stake_pool_type_configuration
         getUnbondingTimePenalty => unbonding_time_penalty
         getRewardTokenIdentifier => reward_token_identifier

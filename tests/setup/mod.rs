@@ -3,6 +3,7 @@ use multiversx_sc::types::{Address, ManagedVec};
 use multiversx_sc_scenario::whitebox_legacy::{BlockchainStateWrapper, ContractObjWrapper};
 use multiversx_sc_scenario::{managed_address, managed_biguint, managed_token_id, DebugApi};
 use multiversx_sc_scenario::{rust_biguint, testing_framework::TxResult};
+use nft_staking::owner::OwnerModule;
 use nft_staking::staking_modules::staking_module_type::StakingModuleType;
 use nft_staking::storage::config::ConfigModule;
 use nft_staking::storage::score::ScoreStorageModule;
