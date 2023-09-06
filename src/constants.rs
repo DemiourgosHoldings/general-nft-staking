@@ -8,3 +8,4 @@ pub const ERR_FAILED_UNBONDING: &str = "Unbonding failed";
 pub const ERR_ONE_TOKEN_ID_SUPPORTED: &str = "Only one token id is allowed per TX";
 pub const ERR_NOTHING_TO_CLAIM: &str = "Nothing to claim";
 pub const ERR_REWARD_ALREADY_DISTRIBUTED: &str = "Reward already distributed";
+pub const ERR_INVALID_REWARD_TOKEN_ID: &str = "Invalid reward token id";

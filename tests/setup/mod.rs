@@ -54,7 +54,7 @@ where
 
         b_mock
             .execute_tx(&owner_address, &contract_wrapper, &rust_zero, |sc| {
-                sc.init();
+                sc.init(managed_token_id!(REWARD_TOKEN_ID));
                 sc.base_asset_score(&managed_token_id!(POOL1_TOKEN_ID))
                     .set(1);
             })

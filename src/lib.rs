@@ -5,7 +5,9 @@ use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 use utils::get_unstored_pending_rewards;
 
-use crate::constants::{ERR_NOTHING_TO_CLAIM, ERR_REWARD_ALREADY_DISTRIBUTED};
+use crate::constants::{
+    ERR_INVALID_REWARD_TOKEN_ID, ERR_NOTHING_TO_CLAIM, ERR_REWARD_ALREADY_DISTRIBUTED,
+};
 
 multiversx_sc::imports!();
 
@@ -24,9 +26,11 @@ pub trait NftStakingContract:
     + storage::user_data::UserDataStorageModule
 {
     #[init]
-    fn init(&self) {
+    fn init(&self, reward_token_identifier: TokenIdentifier) {
         self.unbonding_time_penalty()
             .set_if_empty(&DEFAULT_UNBONDING_TIME_PENALTY);
+        self.reward_token_identifier()
+            .set_if_empty(&reward_token_identifier);
     }
 
     #[payable("*")]
@@ -90,6 +94,8 @@ pub trait NftStakingContract:
         let total_score = self.aggregated_staking_score().get();
         let payment = self.call_value().single_esdt();
 
+        self.require_token_is_reward_token(&payment.token_identifier);
+
         let block_epoch = self.blockchain().get_block_epoch();
         let block_timestamp = self.blockchain().get_block_timestamp();
 
@@ -123,6 +129,13 @@ pub trait NftStakingContract:
             self.reward_distribution_timestamp(epoch).is_empty()
                 && self.reward_rate(epoch).is_empty(),
             ERR_REWARD_ALREADY_DISTRIBUTED
+        );
+    }
+
+    fn require_token_is_reward_token(&self, incoming_token_identifier: &TokenIdentifier) {
+        require!(
+            &self.reward_token_identifier().get() == incoming_token_identifier,
+            ERR_INVALID_REWARD_TOKEN_ID
         );
     }
 }
