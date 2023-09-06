@@ -1,10 +1,15 @@
-use crate::constants::{ERR_INVALID_REWARD_TOKEN_ID, ERR_REWARD_ALREADY_DISTRIBUTED};
+use crate::{
+    constants::{DEB_DENOMINATION, ERR_INVALID_REWARD_TOKEN_ID, ERR_REWARD_ALREADY_DISTRIBUTED},
+    utils::secure_rewards,
+};
 
 multiversx_sc::imports!();
 
 #[multiversx_sc::module]
 pub trait OwnerModule:
-    crate::storage::config::ConfigModule + crate::storage::user_data::UserDataStorageModule
+    crate::storage::config::ConfigModule
+    + crate::storage::user_data::UserDataStorageModule
+    + crate::storage::score::ScoreStorageModule
 {
     #[only_owner]
     #[payable("*")]
@@ -25,6 +30,30 @@ pub trait OwnerModule:
         self.reward_rate(block_epoch).set(reward_rate);
         self.reward_distribution_timestamp(block_epoch)
             .set(&block_timestamp);
+    }
+
+    #[only_owner]
+    #[endpoint(updateDeb)]
+    fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
+        secure_rewards(self, &user_address);
+        let deb_denomination = BigUint::from(DEB_DENOMINATION);
+        let mut old_deb = self.user_deb(&user_address).get();
+        if &old_deb < &deb_denomination {
+            old_deb = deb_denomination.clone();
+        }
+
+        let old_user_score = self.aggregated_user_staking_score(&user_address).get();
+        let old_general_aggregated_score = self.aggregated_staking_score().get();
+
+        let score_without_deb = &(&old_user_score * &deb_denomination) / &old_deb;
+        let new_user_score = &(&score_without_deb * &new_deb) / &deb_denomination;
+        let new_general_aggregated_score =
+            &old_general_aggregated_score - &old_user_score + &new_user_score;
+
+        self.aggregated_user_staking_score(&user_address)
+            .set(new_user_score);
+        self.aggregated_staking_score()
+            .set(&new_general_aggregated_score);
     }
 
     fn require_reward_not_distributed(&self, epoch: u64) {

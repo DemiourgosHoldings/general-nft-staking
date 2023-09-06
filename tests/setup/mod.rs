@@ -265,6 +265,39 @@ where
         assert_eq!(rust_biguint!(expected_balance), balance);
     }
 
+    pub fn update_user_deb(&mut self, new_deb: u64) {
+        let address = self.user_address.clone();
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.update_deb(managed_address!(&address), managed_biguint!(new_deb));
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn assert_stored_rewards(&mut self, expected_amount: u64) {
+        let address = self.user_address.clone();
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let stored_pending_rewards = sc.pending_rewards(&managed_address!(&address)).get();
+                assert_eq!(&managed_biguint!(expected_amount), &stored_pending_rewards);
+            })
+            .assert_ok();
+    }
+
+    pub fn assert_aggregated_score(&mut self, expected_score: u64) {
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let aggregated_score = sc.aggregated_staking_score().get();
+                assert_eq!(managed_biguint!(expected_score), aggregated_score);
+            })
+            .assert_ok();
+    }
+
     fn add_asset_balance(
         b_mock: &mut BlockchainStateWrapper,
         address: &Address,

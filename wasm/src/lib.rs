@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           20
+// Endpoints:                           22
 // Async Callback (empty):               1
-// Total number of exported functions:  22
+// Total number of exported functions:  24
 
 #![no_std]
 
@@ -42,6 +42,8 @@ multiversx_sc_wasm_adapter::endpoints! {
         getLastClaimedEpoch => last_claimed_epoch
         getRewardRate => reward_rate
         getRewardDistributionTimestamp => reward_distribution_timestamp
+        distributeGeneralReward => distribute_reward
+        updateDeb => update_deb
     )
 }
 
