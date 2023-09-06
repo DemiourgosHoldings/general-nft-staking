@@ -78,6 +78,7 @@ pub trait NftStakingContract:
         let caller = &self.blockchain().get_caller();
         secure_rewards(self, &caller);
         let pending_rewards = self.pending_rewards(&caller).get();
+        require!(&pending_rewards > &0, ERR_NOTHING_TO_CLAIM);
         self.pending_rewards(&caller).clear();
 
         self.send().direct_esdt(
