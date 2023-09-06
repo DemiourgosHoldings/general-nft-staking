@@ -3,7 +3,7 @@
 use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
-use utils::get_unstored_pending_rewards;
+use utils::{get_unstored_pending_rewards, secure_rewards};
 
 use crate::constants::{
     ERR_INVALID_REWARD_TOKEN_ID, ERR_NOTHING_TO_CLAIM, ERR_REWARD_ALREADY_DISTRIBUTED,
@@ -74,7 +74,19 @@ pub trait NftStakingContract:
     }
 
     #[endpoint(claimRewards)]
-    fn claim_rewards(&self) {}
+    fn claim_rewards(&self) {
+        let caller = &self.blockchain().get_caller();
+        secure_rewards(self, &caller);
+        let pending_rewards = self.pending_rewards(&caller).get();
+        self.pending_rewards(&caller).clear();
+
+        self.send().direct_esdt(
+            &caller,
+            &self.reward_token_identifier().get(),
+            0,
+            &pending_rewards,
+        );
+    }
 
     #[view(getPendingReward)]
     fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
