@@ -217,6 +217,53 @@ where
             .assert_ok();
     }
 
+    pub fn set_aggregated_score(&mut self, score: u64) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.aggregated_staking_score().set(&managed_biguint!(score));
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn assert_reward_rate(&mut self, epoch: u64, expected_amount: u64) {
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let reward_rate = sc.reward_rate(epoch).get();
+                assert_eq!(managed_biguint!(expected_amount), reward_rate);
+            })
+            .assert_ok();
+    }
+
+    pub fn claim_rewards(&mut self, err_msg: &str) {
+        let tx_result = self.b_mock.execute_tx(
+            &self.user_address,
+            &self.contract_wrapper,
+            &rust_biguint!(0),
+            |sc| {
+                sc.claim_rewards();
+            },
+        );
+
+        Self::assert_tx_result(&tx_result, err_msg);
+    }
+
+    pub fn assert_user_token_balance(
+        &mut self,
+        token_id: &[u8],
+        token_nonce: u64,
+        expected_balance: u64,
+    ) {
+        let balance = self
+            .b_mock
+            .get_esdt_balance(&self.user_address, token_id, token_nonce);
+        assert_eq!(rust_biguint!(expected_balance), balance);
+    }
+
     fn add_asset_balance(
         b_mock: &mut BlockchainStateWrapper,
         address: &Address,
