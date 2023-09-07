@@ -45,3 +45,24 @@ fn stake_full_set() {
             + full_set_bonus_score as u64,
     );
 }
+
+#[test]
+fn stake_full_set_and_unstake_one_removes_full_set_score() {
+    let one_item_score = 50;
+    let full_set_bonus_score = 10;
+
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    let mut transfers = vec![];
+    for nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
+        transfers.push(new_nft_transfer(POOL1_TOKEN_ID, nonce, 1));
+    }
+
+    setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::CodingDivisionSfts);
+    setup.set_token_score(POOL1_TOKEN_ID, one_item_score);
+    setup.set_full_set_score(POOL1_TOKEN_ID, full_set_bonus_score);
+
+    setup.stake(&transfers, NO_ERR_MSG);
+    setup.start_unbonding(POOL1_TOKEN_ID, &[(1, 1)], NO_ERR_MSG);
+
+    setup.assert_user_score((VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE - 1) * one_item_score as u64);
+}
