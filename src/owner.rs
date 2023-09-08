@@ -23,12 +23,37 @@ pub trait OwnerModule:
         let block_epoch = self.blockchain().get_block_epoch();
         let block_timestamp = self.blockchain().get_block_timestamp();
 
-        self.require_reward_not_distributed(block_epoch);
+        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
 
         let reward_rate = payment.amount / total_score;
 
-        self.reward_rate(block_epoch).set(reward_rate);
-        self.reward_distribution_timestamp(block_epoch)
+        self.reward_rate(block_epoch, &payment.token_identifier)
+            .set(reward_rate);
+        self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
+            .set(&block_timestamp);
+    }
+
+    #[only_owner]
+    #[payable("*")]
+    #[endpoint(distributeSecondaryReward)]
+    fn distribute_secondary_reward(&self, target: TokenIdentifier) {
+        let staking_module_type = self.stake_pool_type_configuration(&target).get();
+        let total_score = self
+            .aggregated_secondary_staking_score(&staking_module_type)
+            .get();
+
+        let payment = self.call_value().single_esdt();
+
+        let block_epoch = self.blockchain().get_block_epoch();
+        let block_timestamp = self.blockchain().get_block_timestamp();
+
+        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
+
+        let reward_rate = payment.amount / total_score;
+
+        self.reward_rate(block_epoch, &payment.token_identifier)
+            .set(reward_rate);
+        self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
             .set(&block_timestamp);
     }
 
@@ -57,10 +82,11 @@ pub trait OwnerModule:
             .set(&new_general_aggregated_score);
     }
 
-    fn require_reward_not_distributed(&self, epoch: u64) {
+    fn require_reward_not_distributed(&self, epoch: u64, token_identifier: &TokenIdentifier) {
         require!(
-            self.reward_distribution_timestamp(epoch).is_empty()
-                && self.reward_rate(epoch).is_empty(),
+            self.reward_distribution_timestamp(epoch, token_identifier)
+                .is_empty()
+                && self.reward_rate(epoch, token_identifier).is_empty(),
             ERR_REWARD_ALREADY_DISTRIBUTED
         );
     }

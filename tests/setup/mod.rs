@@ -234,7 +234,9 @@ where
     pub fn assert_reward_rate(&mut self, epoch: u64, expected_amount: u64) {
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                let reward_rate = sc.reward_rate(epoch).get();
+                let reward_rate = sc
+                    .reward_rate(epoch, &managed_token_id!(REWARD_TOKEN_ID))
+                    .get();
                 assert_eq!(managed_biguint!(expected_amount), reward_rate);
             })
             .assert_ok();

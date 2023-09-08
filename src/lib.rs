@@ -95,7 +95,8 @@ pub trait NftStakingContract:
     #[view(getPendingReward)]
     fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
         let primary_reward_token_id = self.reward_token_identifier().get();
-        let not_stored_rewards = get_unstored_pending_rewards(self, &address);
+        let not_stored_rewards =
+            get_unstored_pending_rewards(self, &address, &primary_reward_token_id);
         let stored_rewards = match self
             .pending_rewards(&address, &primary_reward_token_id)
             .is_empty()

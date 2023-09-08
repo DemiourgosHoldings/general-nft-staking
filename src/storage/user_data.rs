@@ -50,11 +50,19 @@ pub trait UserDataStorageModule {
 
     #[view(getRewardRate)]
     #[storage_mapper("reward_rate")]
-    fn reward_rate(&self, epoch: u64) -> SingleValueMapper<BigUint>;
+    fn reward_rate(
+        &self,
+        epoch: u64,
+        token_identifier: &TokenIdentifier,
+    ) -> SingleValueMapper<BigUint>;
 
     #[view(getRewardDistributionTimestamp)]
     #[storage_mapper("reward_distribution_timestamp")]
-    fn reward_distribution_timestamp(&self, epoch: u64) -> SingleValueMapper<u64>;
+    fn reward_distribution_timestamp(
+        &self,
+        epoch: u64,
+        token_identifier: &TokenIdentifier,
+    ) -> SingleValueMapper<u64>;
 
     // secondary reward storage
     #[view(getAggregatedSecondaryStakingScore)]
