@@ -128,6 +128,6 @@ where
     }
 
     fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        BigUint::zero()
+        self.default_impl.get_final_secondary_score()
     }
 }

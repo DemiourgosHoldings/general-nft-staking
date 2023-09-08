@@ -17,4 +17,19 @@ pub trait ScoreStorageModule {
     #[view(getFullSetScore)]
     #[storage_mapper("full_set_score")]
     fn full_set_score(&self, token_identifier: &TokenIdentifier) -> SingleValueMapper<usize>;
+
+    #[view(getSecondaryBaseAssetScore)]
+    #[storage_mapper("secondary_base_asset_score")]
+    fn secondary_base_asset_score(
+        &self,
+        token_identifier: &TokenIdentifier,
+    ) -> SingleValueMapper<usize>;
+
+    #[view(getSecondaryNonceAssetScore)]
+    #[storage_mapper("secondary_nonce_asset_score")]
+    fn secondary_nonce_asset_score(
+        &self,
+        token_identifier: &TokenIdentifier,
+        nonce: u64,
+    ) -> SingleValueMapper<usize>;
 }

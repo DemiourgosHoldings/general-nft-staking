@@ -52,7 +52,6 @@ where
 
         let mut score = BigUint::zero();
         let base_score = BigUint::from(self.sc_ref.base_asset_score(&self.impl_token_id).get());
-
         for staked_nft_info in staked_nft_nonces.iter() {
             let asset_nonce_score = self
                 .sc_ref
@@ -139,6 +138,33 @@ where
     }
 
     fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        BigUint::zero()
+        let staked_nft_nonces = self
+            .sc_ref
+            .staked_nfts(&self.impl_token_id)
+            .get(&self.user_address)
+            .unwrap_or_else(|| ManagedVec::new());
+
+        let mut score = BigUint::zero();
+        let base_score = BigUint::from(
+            self.sc_ref
+                .secondary_base_asset_score(&self.impl_token_id)
+                .get(),
+        );
+        for staked_nft_info in staked_nft_nonces.iter() {
+            let asset_nonce_score = self
+                .sc_ref
+                .secondary_nonce_asset_score(&self.impl_token_id, staked_nft_info.nonce);
+
+            let unit_score;
+            if !asset_nonce_score.is_empty() {
+                unit_score = BigUint::from(asset_nonce_score.get());
+            } else {
+                unit_score = base_score.clone();
+            }
+
+            score += &unit_score * &staked_nft_info.quantity;
+        }
+
+        score
     }
 }
