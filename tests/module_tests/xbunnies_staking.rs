@@ -21,3 +21,33 @@ fn stake() {
     setup.stake(&transfers, NO_ERR_MSG);
     setup.assert_user_score(200);
 }
+
+#[test]
+fn realistic_take_1() {
+    let regular_nft_score = 2;
+    let legendary_nonce_score = 160;
+
+    let regular_nfts_to_stake = 10;
+    let legendary_nfts_to_stake = 10;
+
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
+    setup.set_token_score(POOL1_TOKEN_ID, regular_nft_score);
+
+    let mut transfers = vec![];
+
+    for nonce in 1..=regular_nfts_to_stake {
+        transfers.push(new_nft_transfer(POOL1_TOKEN_ID, nonce, 1));
+    }
+
+    for nonce in regular_nfts_to_stake + 1..=(regular_nfts_to_stake + legendary_nfts_to_stake) {
+        transfers.push(new_nft_transfer(POOL1_TOKEN_ID, nonce, 1));
+        setup.set_token_nonce_score(POOL1_TOKEN_ID, nonce, legendary_nonce_score);
+    }
+
+    let expected_score = legendary_nonce_score as u64 * legendary_nfts_to_stake
+        + regular_nft_score as u64 * regular_nfts_to_stake;
+
+    setup.stake(&transfers, NO_ERR_MSG);
+    setup.assert_user_score(expected_score);
+}
