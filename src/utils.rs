@@ -52,3 +52,55 @@ pub fn secure_rewards<'a, C>(
         .pending_rewards(address, token_identifier)
         .set(pending_unstored_rewards + stored_rewards);
 }
+
+pub fn claim_all_pending_rewards<'a, C>(
+    sc_ref: &'a C,
+    caller: &ManagedAddress<C::Api>,
+) -> ManagedVec<C::Api, EsdtTokenPayment<C::Api>>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let base_reward_opt = claim_single_token_pending_rewards(
+        sc_ref,
+        caller,
+        sc_ref.primary_reward_token_identifier().get(),
+    );
+    let mut pending_rewards = match base_reward_opt {
+        Some(base_reward) => ManagedVec::from_single_item(base_reward),
+        None => ManagedVec::new(),
+    };
+    for token_id in sc_ref.secondary_reward_token_identifiers().iter() {
+        let reward_opt = claim_single_token_pending_rewards(sc_ref, caller, token_id);
+        if reward_opt.is_none() {
+            continue;
+        }
+        pending_rewards.push(reward_opt.unwrap());
+    }
+
+    pending_rewards
+}
+
+pub fn claim_single_token_pending_rewards<'a, C>(
+    sc_ref: &'a C,
+    caller: &ManagedAddress<C::Api>,
+    token_identifier: TokenIdentifier<C::Api>,
+) -> Option<EsdtTokenPayment<C::Api>>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    secure_rewards(sc_ref, caller, &token_identifier);
+
+    let pending_reward = sc_ref.pending_rewards(&caller, &token_identifier).get();
+    if &pending_reward == &BigUint::zero() {
+        return Option::None;
+    }
+
+    sc_ref.pending_rewards(&caller, &token_identifier).clear();
+    let payment = EsdtTokenPayment::new(token_identifier, 0, pending_reward);
+
+    Option::Some(payment)
+}

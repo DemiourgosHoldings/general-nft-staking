@@ -3,9 +3,9 @@
 use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
-use utils::{get_unstored_pending_rewards, secure_rewards};
+use utils::get_unstored_pending_rewards;
 
-use crate::constants::ERR_NOTHING_TO_CLAIM;
+use crate::{constants::ERR_NOTHING_TO_CLAIM, utils::claim_all_pending_rewards};
 
 multiversx_sc::imports!();
 
@@ -76,7 +76,7 @@ pub trait NftStakingContract:
     fn claim_rewards(&self) {
         let caller = &self.blockchain().get_caller();
 
-        let pending_rewards = self.claim_all_pending_rewards(caller);
+        let pending_rewards = claim_all_pending_rewards(self, caller);
         require!(pending_rewards.len() > 0, ERR_NOTHING_TO_CLAIM);
 
         self.send().direct_multi(&caller, &pending_rewards);
@@ -98,44 +98,6 @@ pub trait NftStakingContract:
         };
 
         not_stored_rewards + stored_rewards
-    }
-
-    fn claim_all_pending_rewards(&self, caller: &ManagedAddress) -> ManagedVec<EsdtTokenPayment> {
-        let base_reward_opt = self.claim_single_token_pending_rewards(
-            caller,
-            self.primary_reward_token_identifier().get(),
-        );
-        let mut pending_rewards = match base_reward_opt {
-            Some(base_reward) => ManagedVec::from_single_item(base_reward),
-            None => ManagedVec::new(),
-        };
-        for token_id in self.secondary_reward_token_identifiers().iter() {
-            let reward_opt = self.claim_single_token_pending_rewards(caller, token_id);
-            if reward_opt.is_none() {
-                continue;
-            }
-            pending_rewards.push(reward_opt.unwrap());
-        }
-
-        pending_rewards
-    }
-
-    fn claim_single_token_pending_rewards(
-        &self,
-        caller: &ManagedAddress,
-        token_identifier: TokenIdentifier,
-    ) -> Option<EsdtTokenPayment> {
-        secure_rewards(self, caller, &token_identifier);
-
-        let pending_reward = self.get_pending_reward(caller.clone());
-        if &pending_reward == &BigUint::zero() {
-            return Option::None;
-        }
-
-        self.pending_rewards(&caller, &token_identifier).clear();
-        let payment = EsdtTokenPayment::new(token_identifier, 0, pending_reward);
-
-        Option::Some(payment)
     }
 
     fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {
