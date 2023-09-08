@@ -40,11 +40,7 @@ where
     }
 
     fn count_full_sets(&self) -> BigUint<C::Api> {
-        let staked_nft_nonces = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .get(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
+        let staked_nft_nonces = self.default_impl.get_staked_nfts_data();
 
         let mut full_sets = BigUint::from(100_000u32);
 

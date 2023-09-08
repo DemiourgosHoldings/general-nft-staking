@@ -35,6 +35,15 @@ where
             user_address,
         }
     }
+
+    //TODO: add a struct field and store this data there instead of reading from storage everytime
+    //TODO: add a default DROP fn that stores the changes in this struct field to storage
+    pub fn get_staked_nfts_data(&self) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
+        self.sc_ref
+            .staked_nfts(&self.impl_token_id)
+            .get(&self.user_address)
+            .unwrap_or_else(|| ManagedVec::new())
+    }
 }
 
 impl<'a, C> VestaStakingModule<'a, C> for DefaultStakingModule<'a, C>
@@ -44,11 +53,7 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self) -> BigUint<C::Api> {
-        let staked_nft_nonces = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .get(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
+        let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
         let base_score = BigUint::from(self.sc_ref.base_asset_score(&self.impl_token_id).get());
@@ -83,11 +88,7 @@ where
     }
 
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
-        let mut staked_nfts = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .remove(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
+        let mut staked_nfts = self.get_staked_nfts_data();
 
         staked_nfts.push(NonceQtyPair {
             nonce: nonce,
@@ -138,11 +139,7 @@ where
     }
 
     fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        let staked_nft_nonces = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .get(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
+        let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
         let base_score = BigUint::from(
