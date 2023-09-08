@@ -1,5 +1,73 @@
 multiversx_sc::imports!();
 
+pub fn get_all_pending_rewards<'a, C>(
+    sc_ref: &'a C,
+    address: &ManagedAddress<C::Api>,
+    store_rewards: bool,
+) -> ManagedVec<C::Api, EsdtTokenPayment<C::Api>>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let mut pending_rewards = match get_token_pending_reward_payment(
+        sc_ref,
+        address,
+        sc_ref.primary_reward_token_identifier().get(),
+        store_rewards,
+    ) {
+        Some(pending_reward) => ManagedVec::from_single_item(pending_reward),
+        None => ManagedVec::new(),
+    };
+
+    for token_id in sc_ref.secondary_reward_token_identifiers().iter() {
+        match get_token_pending_reward_payment(sc_ref, address, token_id, store_rewards) {
+            Some(pending_reward) => pending_rewards.push(pending_reward),
+            None => continue,
+        };
+    }
+
+    pending_rewards
+}
+
+pub fn get_token_pending_reward_payment<'a, C>(
+    sc_ref: &'a C,
+    address: &ManagedAddress<C::Api>,
+    token_identifier: TokenIdentifier<C::Api>,
+    store_rewards: bool,
+) -> Option<EsdtTokenPayment<C::Api>>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    if store_rewards {
+        secure_rewards(sc_ref, address, &token_identifier);
+    }
+    let pending_reward = get_total_token_pending_reward(sc_ref, address, &token_identifier);
+    if &pending_reward == &0 {
+        return None;
+    }
+
+    Some(EsdtTokenPayment::new(token_identifier, 0, pending_reward))
+}
+
+pub fn get_total_token_pending_reward<'a, C>(
+    sc_ref: &'a C,
+    address: &ManagedAddress<C::Api>,
+    token_identifier: &TokenIdentifier<C::Api>,
+) -> BigUint<C::Api>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let not_stored_amount = get_unstored_pending_rewards(sc_ref, address, token_identifier);
+    let stored_amount = sc_ref.pending_rewards(address, token_identifier).get();
+
+    not_stored_amount + stored_amount
+}
+
 pub fn get_unstored_pending_rewards<'a, C>(
     sc_ref: &'a C,
     address: &ManagedAddress<C::Api>,
@@ -62,45 +130,13 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let base_reward_opt = claim_single_token_pending_rewards(
-        sc_ref,
-        caller,
-        sc_ref.primary_reward_token_identifier().get(),
-    );
-    let mut pending_rewards = match base_reward_opt {
-        Some(base_reward) => ManagedVec::from_single_item(base_reward),
-        None => ManagedVec::new(),
-    };
-    for token_id in sc_ref.secondary_reward_token_identifiers().iter() {
-        let reward_opt = claim_single_token_pending_rewards(sc_ref, caller, token_id);
-        if reward_opt.is_none() {
-            continue;
-        }
-        pending_rewards.push(reward_opt.unwrap());
+    let pending_rewards = get_all_pending_rewards(sc_ref, caller, true);
+
+    for pending_reward in pending_rewards.iter() {
+        sc_ref
+            .pending_rewards(caller, &pending_reward.token_identifier)
+            .clear();
     }
 
     pending_rewards
-}
-
-pub fn claim_single_token_pending_rewards<'a, C>(
-    sc_ref: &'a C,
-    caller: &ManagedAddress<C::Api>,
-    token_identifier: TokenIdentifier<C::Api>,
-) -> Option<EsdtTokenPayment<C::Api>>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-    C: crate::storage::score::ScoreStorageModule,
-{
-    secure_rewards(sc_ref, caller, &token_identifier);
-
-    let pending_reward = sc_ref.pending_rewards(&caller, &token_identifier).get();
-    if &pending_reward == &BigUint::zero() {
-        return Option::None;
-    }
-
-    sc_ref.pending_rewards(&caller, &token_identifier).clear();
-    let payment = EsdtTokenPayment::new(token_identifier, 0, pending_reward);
-
-    Option::Some(payment)
 }

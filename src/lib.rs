@@ -3,7 +3,7 @@
 use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
-use utils::get_unstored_pending_rewards;
+use utils::get_all_pending_rewards;
 
 use crate::{constants::ERR_NOTHING_TO_CLAIM, utils::claim_all_pending_rewards};
 
@@ -83,21 +83,9 @@ pub trait NftStakingContract:
     }
 
     #[view(getPendingReward)]
-    fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
-        let primary_reward_token_id = self.primary_reward_token_identifier().get();
-        let not_stored_rewards =
-            get_unstored_pending_rewards(self, &address, &primary_reward_token_id);
-        let stored_rewards = match self
-            .pending_rewards(&address, &primary_reward_token_id)
-            .is_empty()
-        {
-            false => self
-                .pending_rewards(&address, &primary_reward_token_id)
-                .get(),
-            true => BigUint::zero(),
-        };
-
-        not_stored_rewards + stored_rewards
+    fn get_pending_reward(&self, address: ManagedAddress) -> ManagedVec<EsdtTokenPayment> {
+        let store_pending_rewards = false;
+        get_all_pending_rewards(self, &address, store_pending_rewards)
     }
 
     fn require_same_token_id(&self, payments: &ManagedVec<EsdtTokenPayment>) {

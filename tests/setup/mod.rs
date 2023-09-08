@@ -212,7 +212,13 @@ where
         let address = self.user_address.clone();
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                let pending_rewards = sc.get_pending_reward(managed_address!(&address));
+                //TODO: this will not work for all rewards
+                let pending_rewards_vec = sc.get_pending_reward(managed_address!(&address));
+                let pending_rewards = match pending_rewards_vec.is_empty() {
+                    true => managed_biguint!(0),
+                    false => pending_rewards_vec.get(0).amount,
+                };
+
                 assert_eq!(managed_biguint!(expected_amount), pending_rewards);
             })
             .assert_ok();
