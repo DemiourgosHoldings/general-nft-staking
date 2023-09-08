@@ -35,7 +35,8 @@ pub trait OwnerModule:
     #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
-        secure_rewards(self, &user_address);
+        let primary_reward_token_id = self.reward_token_identifier().get();
+        secure_rewards(self, &user_address, &primary_reward_token_id);
         let deb_denomination = BigUint::from(DEB_DENOMINATION);
         let mut old_deb = self.user_deb(&user_address).get();
         if &old_deb < &deb_denomination {

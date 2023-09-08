@@ -75,10 +75,14 @@ pub trait NftStakingContract:
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {
         let caller = &self.blockchain().get_caller();
-        secure_rewards(self, &caller);
-        let pending_rewards = self.pending_rewards(&caller).get();
+        let primary_reward_token_id = self.reward_token_identifier().get();
+        secure_rewards(self, &caller, &primary_reward_token_id);
+        let pending_rewards = self
+            .pending_rewards(&caller, &primary_reward_token_id)
+            .get();
         require!(&pending_rewards > &0, ERR_NOTHING_TO_CLAIM);
-        self.pending_rewards(&caller).clear();
+        self.pending_rewards(&caller, &primary_reward_token_id)
+            .clear();
 
         self.send().direct_esdt(
             &caller,
@@ -90,9 +94,15 @@ pub trait NftStakingContract:
 
     #[view(getPendingReward)]
     fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
+        let primary_reward_token_id = self.reward_token_identifier().get();
         let not_stored_rewards = get_unstored_pending_rewards(self, &address);
-        let stored_rewards = match self.pending_rewards(&address).is_empty() {
-            false => self.pending_rewards(&address).get(),
+        let stored_rewards = match self
+            .pending_rewards(&address, &primary_reward_token_id)
+            .is_empty()
+        {
+            false => self
+                .pending_rewards(&address, &primary_reward_token_id)
+                .get(),
             true => BigUint::zero(),
         };
 

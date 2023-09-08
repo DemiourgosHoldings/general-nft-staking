@@ -1,9 +1,13 @@
-use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
+use crate::{
+    staking_modules::staking_module_type::StakingModuleType,
+    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
+};
 
 multiversx_sc::imports!();
 
 #[multiversx_sc::module]
 pub trait UserDataStorageModule {
+    // Core storage
     #[view(getStakedNfts)]
     #[storage_mapper("staked_nfts")]
     fn staked_nfts(
@@ -11,10 +15,18 @@ pub trait UserDataStorageModule {
         token_identifier: &TokenIdentifier,
     ) -> MapMapper<ManagedAddress, ManagedVec<NonceQtyPair<Self::Api>>>;
 
+    #[view(getUnbondingAssets)]
+    #[storage_mapper("unbonding_assets")]
+    fn unbonding_assets(
+        &self,
+        address: &ManagedAddress,
+    ) -> MapMapper<u64, StartUnbondingPayload<Self::Api>>;
+
     #[view(getUserDeb)]
     #[storage_mapper("user_deb")]
     fn user_deb(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
+    // primary reward storage
     #[view(getAggregatedStakingScore)]
     #[storage_mapper("aggregated_staking_score")]
     fn aggregated_staking_score(&self) -> SingleValueMapper<BigUint>;
@@ -26,14 +38,7 @@ pub trait UserDataStorageModule {
 
     #[view(getPendingRewards)]
     #[storage_mapper("pending_rewards")]
-    fn pending_rewards(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
-
-    #[view(getUnbondingAssets)]
-    #[storage_mapper("unbonding_assets")]
-    fn unbonding_assets(
-        &self,
-        address: &ManagedAddress,
-    ) -> MapMapper<u64, StartUnbondingPayload<Self::Api>>;
+    fn pending_rewards(&self, address: &ManagedAddress, token_identifier: &TokenIdentifier) -> SingleValueMapper<BigUint>;
 
     #[view(getLastClaimedEpoch)]
     #[storage_mapper("last_claimed_epoch")]
@@ -46,4 +51,20 @@ pub trait UserDataStorageModule {
     #[view(getRewardDistributionTimestamp)]
     #[storage_mapper("reward_distribution_timestamp")]
     fn reward_distribution_timestamp(&self, epoch: u64) -> SingleValueMapper<u64>;
+
+    // secondary reward storage
+    #[view(getAggregatedSecondaryStakingScore)]
+    #[storage_mapper("aggregated_secondary_staking_score")]
+    fn aggregated_secondary_staking_score(
+        &self,
+        staking_module: &StakingModuleType,
+    ) -> SingleValueMapper<BigUint>;
+
+    #[view(getAggregatedUserSecondaryStakingScore)]
+    #[storage_mapper("aggregated_user_secondary_staking_score")]
+    fn aggregated_user_secondary_staking_score(
+        &self,
+        staking_module: &StakingModuleType,
+        address: &ManagedAddress,
+    ) -> SingleValueMapper<BigUint>;
 }
