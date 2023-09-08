@@ -29,7 +29,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         getPendingReward => get_pending_reward
         getStakingPoolTypeConfiguration => stake_pool_type_configuration
         getUnbondingTimePenalty => unbonding_time_penalty
-        getRewardTokenIdentifier => reward_token_identifier
+        getRewardTokenIdentifier => primary_reward_token_identifier
         getBaseAssetScore => base_asset_score
         getNonceAssetScore => nonce_asset_score
         getFullSetScore => full_set_score

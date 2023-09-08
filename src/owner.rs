@@ -60,7 +60,7 @@ pub trait OwnerModule:
     #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
-        let primary_reward_token_id = self.reward_token_identifier().get();
+        let primary_reward_token_id = self.primary_reward_token_identifier().get();
         secure_rewards(self, &user_address, &primary_reward_token_id);
         let deb_denomination = BigUint::from(DEB_DENOMINATION);
         let mut old_deb = self.user_deb(&user_address).get();
@@ -93,7 +93,7 @@ pub trait OwnerModule:
 
     fn require_token_is_reward_token(&self, incoming_token_identifier: &TokenIdentifier) {
         require!(
-            &self.reward_token_identifier().get() == incoming_token_identifier,
+            &self.primary_reward_token_identifier().get() == incoming_token_identifier,
             ERR_INVALID_REWARD_TOKEN_ID
         );
     }

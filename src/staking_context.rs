@@ -93,7 +93,7 @@ where
     }
 
     fn secure_rewards(&self) {
-        let primary_reward_token_id = self.sc_ref.reward_token_identifier().get();
+        let primary_reward_token_id = self.sc_ref.primary_reward_token_identifier().get();
         secure_rewards(self.sc_ref, &self.caller, &primary_reward_token_id);
     }
 }

@@ -25,11 +25,11 @@ pub trait NftStakingContract:
     + owner::OwnerModule
 {
     #[init]
-    fn init(&self, reward_token_identifier: TokenIdentifier) {
+    fn init(&self, primary_reward_token_identifier: TokenIdentifier) {
         self.unbonding_time_penalty()
             .set_if_empty(&DEFAULT_UNBONDING_TIME_PENALTY);
-        self.reward_token_identifier()
-            .set_if_empty(&reward_token_identifier);
+        self.primary_reward_token_identifier()
+            .set_if_empty(&primary_reward_token_identifier);
     }
 
     #[payable("*")]
@@ -75,7 +75,7 @@ pub trait NftStakingContract:
     #[endpoint(claimRewards)]
     fn claim_rewards(&self) {
         let caller = &self.blockchain().get_caller();
-        let primary_reward_token_id = self.reward_token_identifier().get();
+        let primary_reward_token_id = self.primary_reward_token_identifier().get();
         secure_rewards(self, &caller, &primary_reward_token_id);
         let pending_rewards = self
             .pending_rewards(&caller, &primary_reward_token_id)
@@ -86,7 +86,7 @@ pub trait NftStakingContract:
 
         self.send().direct_esdt(
             &caller,
-            &self.reward_token_identifier().get(),
+            &self.primary_reward_token_identifier().get(),
             0,
             &pending_rewards,
         );
@@ -94,7 +94,7 @@ pub trait NftStakingContract:
 
     #[view(getPendingReward)]
     fn get_pending_reward(&self, address: ManagedAddress) -> BigUint {
-        let primary_reward_token_id = self.reward_token_identifier().get();
+        let primary_reward_token_id = self.primary_reward_token_identifier().get();
         let not_stored_rewards =
             get_unstored_pending_rewards(self, &address, &primary_reward_token_id);
         let stored_rewards = match self
