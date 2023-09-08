@@ -5,6 +5,7 @@ use crate::types::start_unbonding_payload::StartUnbondingPayload;
 use super::{
     coding_division_sft_staking_module::CodingDivisionSftStakingModule,
     default::DefaultStakingModule, invalid::InvalidStakingModule,
+    snakes_sft_staking_module::SnakesSftStakingModule,
 };
 
 multiversx_sc::derive_imports!();
@@ -17,6 +18,7 @@ pub enum StakingModuleType {
     Bloodshed = 3,
     Nosferatu = 4,
     VestaXDAO = 5,
+    SnakesSfts = 6,
 }
 
 pub enum StakingModuleTypeMapping<'a, C>
@@ -31,6 +33,7 @@ where
     Bloodshed(DefaultStakingModule<'a, C>),
     Nosferatu(DefaultStakingModule<'a, C>),
     VestaXDAO(DefaultStakingModule<'a, C>),
+    SnakesSfts(SnakesSftStakingModule<'a, C>),
 }
 
 pub trait StakingModuleTypeFactory<'a, C>
@@ -78,6 +81,9 @@ where
             StakingModuleType::VestaXDAO => StakingModuleTypeMapping::VestaXDAO(
                 DefaultStakingModule::new(sc_ref, token_identifier, user_address),
             ),
+            StakingModuleType::SnakesSfts => StakingModuleTypeMapping::SnakesSfts(
+                SnakesSftStakingModule::new(sc_ref, token_identifier, user_address),
+            ),
         }
     }
 }
@@ -109,6 +115,7 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.get_base_user_score(),
             StakingModuleTypeMapping::Nosferatu(module) => module.get_base_user_score(),
             StakingModuleTypeMapping::VestaXDAO(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.get_base_user_score(),
         }
     }
 
@@ -120,6 +127,7 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.get_final_user_score(),
             StakingModuleTypeMapping::Nosferatu(module) => module.get_final_user_score(),
             StakingModuleTypeMapping::VestaXDAO(module) => module.get_final_user_score(),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.get_final_user_score(),
         }
     }
 
@@ -133,6 +141,7 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::Nosferatu(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::VestaXDAO(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.add_to_storage(nonce, amount),
         }
     }
 
@@ -144,6 +153,7 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::Nosferatu(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::VestaXDAO(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.start_unbonding(payload),
         }
     }
 
@@ -157,6 +167,7 @@ where
             StakingModuleTypeMapping::Bloodshed(module) => module.get_final_secondary_score(),
             StakingModuleTypeMapping::Nosferatu(module) => module.get_final_secondary_score(),
             StakingModuleTypeMapping::VestaXDAO(module) => module.get_final_secondary_score(),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.get_final_secondary_score(),
         }
     }
 }
