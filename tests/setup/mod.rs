@@ -139,6 +139,25 @@ where
             .assert_ok();
     }
 
+    pub fn assert_secondary_user_score(
+        &mut self,
+        module_type: StakingModuleType,
+        expected_score: u64,
+    ) {
+        let address = &self.user_address;
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let user_score = sc
+                    .aggregated_user_secondary_staking_score(
+                        &module_type,
+                        &managed_address!(address),
+                    )
+                    .get();
+                assert_eq!(managed_biguint!(expected_score), user_score);
+            })
+            .assert_ok();
+    }
+
     pub fn set_token_score(&mut self, token_id: &[u8], score: usize) {
         self.b_mock
             .execute_tx(
@@ -147,6 +166,20 @@ where
                 &rust_biguint!(0),
                 |sc| {
                     sc.base_asset_score(&managed_token_id!(token_id))
+                        .set(&score);
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn set_secondary_token_score(&mut self, token_id: &[u8], score: usize) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.secondary_base_asset_score(&managed_token_id!(token_id))
                         .set(&score);
                 },
             )
