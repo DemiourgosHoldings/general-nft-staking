@@ -89,11 +89,7 @@ where
     }
 
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
-        let mut staked_nfts = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .remove(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
+        let mut staked_nfts = self.default_impl.get_staked_nfts_data();
 
         let existing_item_index = staked_nfts.iter().position(|p| p.nonce == nonce);
         let item_to_insert;
