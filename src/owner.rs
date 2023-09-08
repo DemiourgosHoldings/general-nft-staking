@@ -18,19 +18,7 @@ pub trait OwnerModule:
         let total_score = self.aggregated_staking_score().get();
         let payment = self.call_value().single_esdt();
 
-        self.require_token_is_reward_token(&payment.token_identifier);
-
-        let block_epoch = self.blockchain().get_block_epoch();
-        let block_timestamp = self.blockchain().get_block_timestamp();
-
-        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
-
-        let reward_rate = payment.amount / total_score;
-
-        self.reward_rate(block_epoch, &payment.token_identifier)
-            .set(reward_rate);
-        self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
-            .set(&block_timestamp);
+        self.distribute_reward_handler(payment, total_score);
     }
 
     #[only_owner]
@@ -41,20 +29,9 @@ pub trait OwnerModule:
         let total_score = self
             .aggregated_secondary_staking_score(&staking_module_type)
             .get();
-
         let payment = self.call_value().single_esdt();
 
-        let block_epoch = self.blockchain().get_block_epoch();
-        let block_timestamp = self.blockchain().get_block_timestamp();
-
-        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
-
-        let reward_rate = payment.amount / total_score;
-
-        self.reward_rate(block_epoch, &payment.token_identifier)
-            .set(reward_rate);
-        self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
-            .set(&block_timestamp);
+        self.distribute_reward_handler(payment, total_score);
     }
 
     #[only_owner]
@@ -82,6 +59,20 @@ pub trait OwnerModule:
             .set(&new_general_aggregated_score);
     }
 
+    fn distribute_reward_handler(&self, payment: EsdtTokenPayment, total_score: BigUint) {
+        self.require_token_is_reward_token(&payment.token_identifier);
+        let block_epoch = self.blockchain().get_block_epoch();
+        let block_timestamp = self.blockchain().get_block_timestamp();
+
+        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
+        let reward_rate = payment.amount / total_score;
+
+        self.reward_rate(block_epoch, &payment.token_identifier)
+            .set(reward_rate);
+        self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
+            .set(&block_timestamp);
+    }
+
     fn require_reward_not_distributed(&self, epoch: u64, token_identifier: &TokenIdentifier) {
         require!(
             self.reward_distribution_timestamp(epoch, token_identifier)
@@ -93,7 +84,10 @@ pub trait OwnerModule:
 
     fn require_token_is_reward_token(&self, incoming_token_identifier: &TokenIdentifier) {
         require!(
-            &self.primary_reward_token_identifier().get() == incoming_token_identifier,
+            &self.primary_reward_token_identifier().get() == incoming_token_identifier
+                || self
+                    .secondary_reward_token_identifiers()
+                    .contains(incoming_token_identifier),
             ERR_INVALID_REWARD_TOKEN_ID
         );
     }
