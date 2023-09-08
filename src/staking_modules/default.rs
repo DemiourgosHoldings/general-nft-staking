@@ -137,4 +137,8 @@ where
 
         initial_staked_nfts_count != remaining_staked_nfts_count
     }
+
+    fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
+        BigUint::zero()
+    }
 }

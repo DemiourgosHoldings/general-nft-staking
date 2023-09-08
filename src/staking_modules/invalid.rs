@@ -38,4 +38,8 @@ where
     ) -> bool {
         true
     }
+
+    fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
+        BigUint::zero()
+    }
 }

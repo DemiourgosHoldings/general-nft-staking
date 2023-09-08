@@ -38,7 +38,11 @@ pub trait UserDataStorageModule {
 
     #[view(getPendingRewards)]
     #[storage_mapper("pending_rewards")]
-    fn pending_rewards(&self, address: &ManagedAddress, token_identifier: &TokenIdentifier) -> SingleValueMapper<BigUint>;
+    fn pending_rewards(
+        &self,
+        address: &ManagedAddress,
+        token_identifier: &TokenIdentifier,
+    ) -> SingleValueMapper<BigUint>;
 
     #[view(getLastClaimedEpoch)]
     #[storage_mapper("last_claimed_epoch")]

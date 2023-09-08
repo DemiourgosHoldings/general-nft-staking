@@ -126,4 +126,8 @@ where
     fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
         self.default_impl.start_unbonding(payload)
     }
+
+    fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
+        BigUint::zero()
+    }
 }
