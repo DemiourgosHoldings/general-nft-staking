@@ -41,12 +41,13 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    if store_rewards {
-        secure_rewards(sc_ref, address, &token_identifier);
-    }
     let pending_reward = get_total_token_pending_reward(sc_ref, address, &token_identifier);
     if &pending_reward == &0 {
         return None;
+    }
+
+    if store_rewards {
+        secure_rewards(sc_ref, address, &token_identifier);
     }
 
     Some(EsdtTokenPayment::new(token_identifier, 0, pending_reward))
