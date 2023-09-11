@@ -84,11 +84,14 @@ where
     let user_score = sc_ref.aggregated_user_staking_score(address).get();
 
     let mut pending_reward = BigUint::zero();
-    for epochs in last_claimed_epoch + 1..=current_epoch {
-        if sc_ref.reward_rate(epochs, token_identifier).is_empty() {
+    for current_epoch in last_claimed_epoch + 1..=current_epoch {
+        if sc_ref
+            .reward_rate(current_epoch, token_identifier)
+            .is_empty()
+        {
             continue;
         }
-        let reward_rate = sc_ref.reward_rate(epochs, token_identifier).get();
+        let reward_rate = sc_ref.reward_rate(current_epoch, token_identifier).get();
         pending_reward += &user_score * &reward_rate;
     }
 
