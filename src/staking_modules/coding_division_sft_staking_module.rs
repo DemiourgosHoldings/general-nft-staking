@@ -78,13 +78,13 @@ where
         let full_sets = self.count_full_sets();
         let full_set_score = match self
             .sc_ref
-            .full_set_score(&self.impl_token_id, &self.default_impl.module_type)
+            .full_set_score(&self.impl_token_id, &StakingModuleType::All)
             .is_empty()
         {
             true => BigUint::zero(),
             false => BigUint::from(
                 self.sc_ref
-                    .full_set_score(&self.impl_token_id, &self.default_impl.module_type)
+                    .full_set_score(&self.impl_token_id, &StakingModuleType::All)
                     .get(),
             ),
         };
