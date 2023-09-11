@@ -13,7 +13,7 @@ use nft_staking::NftStakingContract;
 
 use self::constants::{
     NO_ERR_MSG, POOL1_QUANTITY_PER_NONCE, POOL1_TOKEN_ID, POOL2_QUANTITY_PER_NONCE, POOL2_TOKEN_ID,
-    REWARD_TOKEN_ID,
+    REWARD_TOKEN_ID, SECONDARY_REWARD_TOKEN_ID_1, SECONDARY_REWARD_TOKEN_ID_2,
 };
 use self::types::{NonceQtyPair, TransferAssetType, TransferAssetTypeParserVec};
 use nft_staking::types::nonce_qty_pair::NonceQtyPair as NonceQtyPairSc;
@@ -58,6 +58,10 @@ where
                 sc.init(managed_token_id!(REWARD_TOKEN_ID));
                 sc.base_asset_score(&managed_token_id!(POOL1_TOKEN_ID))
                     .set(1);
+                sc.secondary_reward_token_identifiers()
+                    .insert(managed_token_id!(SECONDARY_REWARD_TOKEN_ID_1));
+                sc.secondary_reward_token_identifiers()
+                    .insert(managed_token_id!(SECONDARY_REWARD_TOKEN_ID_2));
             })
             .assert_ok();
 
@@ -241,11 +245,30 @@ where
         Self::assert_tx_result(&tx_result, err_msg);
     }
 
+    pub fn distribute_secondary_reward(
+        &mut self,
+        token_id: &[u8],
+        target_token_id: &[u8],
+        amount: u64,
+        err_msg: &str,
+    ) {
+        let tx_result = self.b_mock.execute_esdt_transfer(
+            &self.owner_address,
+            &self.contract_wrapper,
+            token_id,
+            0,
+            &rust_biguint!(amount),
+            |sc| {
+                sc.distribute_secondary_reward(managed_token_id!(target_token_id));
+            },
+        );
+        Self::assert_tx_result(&tx_result, err_msg);
+    }
+
     pub fn assert_pending_reward(&mut self, expected_amount: u64) {
         let address = self.user_address.clone();
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                //TODO: this will not work for all rewards
                 let pending_rewards_vec = sc.get_pending_reward(managed_address!(&address));
                 let pending_rewards = match pending_rewards_vec.is_empty() {
                     true => managed_biguint!(0),
@@ -253,6 +276,25 @@ where
                 };
 
                 assert_eq!(managed_biguint!(expected_amount), pending_rewards);
+            })
+            .assert_ok();
+    }
+
+    pub fn assert_explicit_pending_reward(&mut self, reward_token_id: &[u8], expected_amount: u64) {
+        let address = self.user_address.clone();
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                //TODO: this will not work for all rewards
+                let pending_rewards_vec = sc.get_pending_reward(managed_address!(&address));
+                let mut found_pending_rewards = managed_biguint!(0);
+                for pending_rew_it in pending_rewards_vec.iter() {
+                    if &pending_rew_it.token_identifier == &managed_token_id!(reward_token_id) {
+                        found_pending_rewards = pending_rew_it.amount;
+                        break;
+                    }
+                }
+
+                assert_eq!(managed_biguint!(expected_amount), found_pending_rewards);
             })
             .assert_ok();
     }
@@ -358,6 +400,16 @@ where
         b_mock.set_esdt_balance(
             owner_address,
             REWARD_TOKEN_ID,
+            &rust_biguint!(1_000_000_000),
+        );
+        b_mock.set_esdt_balance(
+            owner_address,
+            SECONDARY_REWARD_TOKEN_ID_1,
+            &rust_biguint!(1_000_000_000),
+        );
+        b_mock.set_esdt_balance(
+            owner_address,
+            SECONDARY_REWARD_TOKEN_ID_2,
             &rust_biguint!(1_000_000_000),
         );
     }

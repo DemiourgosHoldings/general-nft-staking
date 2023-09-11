@@ -4,7 +4,7 @@ use nft_staking::{
 };
 
 use crate::setup::{
-    constants::{NO_ERR_MSG, POOL1_TOKEN_ID},
+    constants::{NO_ERR_MSG, POOL1_TOKEN_ID, POOL2_TOKEN_ID, SECONDARY_REWARD_TOKEN_ID_1},
     types::new_nft_transfer,
     ContractSetup,
 };
@@ -44,4 +44,23 @@ fn primary_distribution_reward_rate_correct_calculation() {
     setup.distribute_reward(reward, NO_ERR_MSG);
 
     setup.assert_reward_rate(1, reward_rate);
+}
+
+#[test]
+fn simple_successful_secondary_distribution() {
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
+    setup.set_token_score(POOL2_TOKEN_ID, 0);
+    setup.set_secondary_token_score(POOL2_TOKEN_ID, 1);
+    let transfers = vec![new_nft_transfer(POOL2_TOKEN_ID, 1, 1)];
+    setup.stake(&transfers, NO_ERR_MSG);
+
+    setup.distribute_secondary_reward(
+        SECONDARY_REWARD_TOKEN_ID_1,
+        POOL2_TOKEN_ID,
+        100_000,
+        NO_ERR_MSG,
+    );
+
+    setup.assert_explicit_pending_reward(SECONDARY_REWARD_TOKEN_ID_1, 100_000);
 }
