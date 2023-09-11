@@ -46,7 +46,11 @@ pub trait UserDataStorageModule {
 
     #[view(getLastClaimedEpoch)]
     #[storage_mapper("last_claimed_epoch")]
-    fn last_claimed_epoch(&self, address: &ManagedAddress) -> SingleValueMapper<u64>;
+    fn last_claimed_epoch(
+        &self,
+        staking_module: &StakingModuleType,
+        address: &ManagedAddress,
+    ) -> SingleValueMapper<u64>;
 
     #[view(getRewardRate)]
     #[storage_mapper("reward_rate")]

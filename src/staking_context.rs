@@ -95,7 +95,12 @@ where
 
     fn secure_rewards(&self) {
         let primary_reward_token_id = self.sc_ref.primary_reward_token_identifier().get();
-        secure_rewards(self.sc_ref, &self.caller, &primary_reward_token_id);
+        secure_rewards(
+            self.sc_ref,
+            &self.caller,
+            &primary_reward_token_id,
+            &self.staking_module_type,
+        );
     }
 
     fn update_primary_score(&self) {

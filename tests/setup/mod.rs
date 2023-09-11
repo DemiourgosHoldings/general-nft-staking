@@ -284,7 +284,6 @@ where
         let address = self.user_address.clone();
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                //TODO: this will not work for all rewards
                 let pending_rewards_vec = sc.get_pending_reward(managed_address!(&address));
                 let mut found_pending_rewards = managed_biguint!(0);
                 for pending_rew_it in pending_rewards_vec.iter() {
@@ -312,12 +311,24 @@ where
             .assert_ok();
     }
 
-    pub fn assert_reward_rate(&mut self, epoch: u64, expected_amount: u64) {
+    pub fn set_secondary_aggregated_score(&mut self, module_type: StakingModuleType, score: u64) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.aggregated_secondary_staking_score(&module_type)
+                        .set(&managed_biguint!(score));
+                },
+            )
+            .assert_ok();
+    }
+
+    pub fn assert_reward_rate(&mut self, token_id: &[u8], epoch: u64, expected_amount: u64) {
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                let reward_rate = sc
-                    .reward_rate(epoch, &managed_token_id!(REWARD_TOKEN_ID))
-                    .get();
+                let reward_rate = sc.reward_rate(epoch, &managed_token_id!(token_id)).get();
                 assert_eq!(managed_biguint!(expected_amount), reward_rate);
             })
             .assert_ok();
@@ -381,6 +392,19 @@ where
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
                 let aggregated_score = sc.aggregated_staking_score().get();
+                assert_eq!(managed_biguint!(expected_score), aggregated_score);
+            })
+            .assert_ok();
+    }
+
+    pub fn assert_secondary_aggregated_score(
+        &mut self,
+        staking_module: StakingModuleType,
+        expected_score: u64,
+    ) {
+        self.b_mock
+            .execute_query(&self.contract_wrapper, |sc| {
+                let aggregated_score = sc.aggregated_secondary_staking_score(&staking_module).get();
                 assert_eq!(managed_biguint!(expected_score), aggregated_score);
             })
             .assert_ok();
