@@ -10,7 +10,9 @@ use super::{
 
 multiversx_sc::derive_imports!();
 
-#[derive(TopEncode, TopDecode, Clone, PartialEq, Eq, TypeAbi, NestedDecode, NestedEncode)]
+#[derive(
+    TopEncode, TopDecode, Clone, PartialEq, Eq, TypeAbi, NestedDecode, NestedEncode, Debug,
+)]
 pub enum StakingModuleType {
     Invalid = 0,
     CodingDivisionSfts = 1,

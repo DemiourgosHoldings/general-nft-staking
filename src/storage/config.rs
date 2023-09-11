@@ -15,7 +15,7 @@ pub trait ConfigModule {
     fn reward_token_to_staking_module_map(
         &self,
         reward_token_id: &TokenIdentifier,
-    ) -> SetMapper<StakingModuleType>;
+    ) -> UnorderedSetMapper<StakingModuleType>;
 
     #[view(getUnbondingTimePenalty)]
     #[storage_mapper("unbonding_time_penalty")]

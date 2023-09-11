@@ -121,12 +121,8 @@ pub fn secure_rewards<'a, C>(
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let pending_unstored_rewards =
-        get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module);
-    let stored_rewards = match sc_ref.pending_rewards(address, token_identifier).is_empty() {
-        true => BigUint::zero(),
-        false => sc_ref.pending_rewards(address, token_identifier).get(),
-    };
+    let pending_rewards =
+        get_total_token_pending_reward(sc_ref, address, token_identifier, staking_module);
 
     let block_epoch = sc_ref.blockchain().get_block_epoch();
     if sc_ref.reward_rate(block_epoch, token_identifier).is_empty() {
@@ -141,7 +137,7 @@ pub fn secure_rewards<'a, C>(
 
     sc_ref
         .pending_rewards(address, token_identifier)
-        .set(pending_unstored_rewards + stored_rewards);
+        .set(pending_rewards);
 }
 
 pub fn claim_all_pending_rewards<'a, C>(
