@@ -34,7 +34,9 @@ where
         let caller = sc_ref.blockchain().get_caller();
         let staking_module_type = sc_ref.stake_pool_type_configuration(payment_token_id).get();
 
-        let aggregated_score = sc_ref.aggregated_staking_score(&staking_module_type).get();
+        let aggregated_score = sc_ref
+            .aggregated_staking_score(&StakingModuleType::All)
+            .get();
         let aggregated_user_score = match sc_ref
             .aggregated_user_staking_score(&StakingModuleType::All, &caller)
             .is_empty()
@@ -112,7 +114,7 @@ where
         let new_user_score = self.staking_module_impl.get_final_user_score();
 
         let new_aggregated_score =
-            &self.aggregated_score - &self.aggregated_user_score + &new_user_score;
+            &self.aggregated_score + &new_user_score - &self.aggregated_user_score;
 
         self.sc_ref
             .aggregated_user_staking_score(&StakingModuleType::All, &self.caller)

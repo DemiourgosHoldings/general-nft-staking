@@ -27,6 +27,8 @@ fn stake() {
 fn stake_full_set() {
     let one_item_score = 5;
     let full_set_bonus_score = 25;
+    let expected_score = VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE * one_item_score as u64
+        + full_set_bonus_score as u64;
 
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let mut transfers = vec![];
@@ -40,15 +42,12 @@ fn stake_full_set() {
 
     setup.stake(&transfers, NO_ERR_MSG);
 
-    setup.assert_user_score(
-        StakingModuleType::All,
-        VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE * one_item_score as u64
-            + full_set_bonus_score as u64,
-    );
+    setup.assert_user_score(StakingModuleType::All, expected_score);
+    setup.assert_aggregated_score(StakingModuleType::All, expected_score)
 }
 
 #[test]
-fn stake_full_set_and_unstake_one_removes_full_set_score() {
+fn stake_full_set_and_unstake_one_removes_full_set_bonus() {
     let one_item_score = 5;
     let full_set_bonus_score = 25;
 
