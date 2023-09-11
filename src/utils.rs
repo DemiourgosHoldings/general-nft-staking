@@ -15,10 +15,18 @@ where
     let mut pending_rewards = ManagedVec::new();
 
     for token_id in sc_ref.reward_token_identifiers().iter() {
-        match get_token_pending_reward_payment(sc_ref, address, token_id, store_rewards) {
-            Some(pending_reward) => pending_rewards.push(pending_reward),
-            None => continue,
-        };
+        for staking_module_type in sc_ref.reward_token_to_staking_module_map(&token_id).iter() {
+            match get_token_pending_reward_payment(
+                sc_ref,
+                address,
+                &token_id,
+                store_rewards,
+                &staking_module_type,
+            ) {
+                Some(pending_reward) => pending_rewards.push(pending_reward),
+                None => continue,
+            };
+        }
     }
 
     pending_rewards
@@ -27,17 +35,15 @@ where
 pub fn get_token_pending_reward_payment<'a, C>(
     sc_ref: &'a C,
     address: &ManagedAddress<C::Api>,
-    token_identifier: TokenIdentifier<C::Api>,
+    token_identifier: &TokenIdentifier<C::Api>,
     store_rewards: bool,
+    staking_module_type: &StakingModuleType,
 ) -> Option<EsdtTokenPayment<C::Api>>
 where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let staking_module_type = sc_ref
-        .stake_pool_type_configuration(&token_identifier)
-        .get();
     let pending_reward =
         get_total_token_pending_reward(sc_ref, address, &token_identifier, &staking_module_type);
     if &pending_reward == &0 {
@@ -48,7 +54,11 @@ where
         secure_rewards(sc_ref, address, &token_identifier, &staking_module_type);
     }
 
-    Some(EsdtTokenPayment::new(token_identifier, 0, pending_reward))
+    Some(EsdtTokenPayment::new(
+        token_identifier.clone(),
+        0,
+        pending_reward,
+    ))
 }
 
 pub fn get_total_token_pending_reward<'a, C>(

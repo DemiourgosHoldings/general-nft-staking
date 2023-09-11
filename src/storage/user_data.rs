@@ -63,7 +63,7 @@ pub trait UserDataStorageModule {
     fn reward_rate(
         &self,
         epoch: u64,
-        token_identifier: &TokenIdentifier,
+        reward_token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<BigUint>;
 
     #[view(getRewardDistributionTimestamp)]

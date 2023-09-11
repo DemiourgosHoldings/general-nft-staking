@@ -7,8 +7,15 @@ pub trait ConfigModule {
     #[storage_mapper("staking_pool_type_configuration")]
     fn stake_pool_type_configuration(
         &self,
-        token_identifier: &TokenIdentifier,
+        collection_token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<StakingModuleType>;
+
+    #[view(getStakingModulesByRewardToken)]
+    #[storage_mapper("reward_token_to_staking_module_map")]
+    fn reward_token_to_staking_module_map(
+        &self,
+        reward_token_id: &TokenIdentifier,
+    ) -> SetMapper<StakingModuleType>;
 
     #[view(getUnbondingTimePenalty)]
     #[storage_mapper("unbonding_time_penalty")]

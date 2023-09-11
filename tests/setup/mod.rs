@@ -62,6 +62,9 @@ where
                     .insert(managed_token_id!(SECONDARY_REWARD_TOKEN_ID_1));
                 sc.reward_token_identifiers()
                     .insert(managed_token_id!(SECONDARY_REWARD_TOKEN_ID_2));
+
+                sc.reward_token_to_staking_module_map(&managed_token_id!(REWARD_TOKEN_ID))
+                    .insert(StakingModuleType::All);
             })
             .assert_ok();
 
@@ -205,6 +208,8 @@ where
                 |sc| {
                     sc.stake_pool_type_configuration(&managed_token_id!(token_id))
                         .set(&pool_type);
+                    sc.reward_token_to_staking_module_map(&managed_token_id!(REWARD_TOKEN_ID))
+                        .insert(pool_type);
                 },
             )
             .assert_ok();
