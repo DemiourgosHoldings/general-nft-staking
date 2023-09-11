@@ -45,7 +45,7 @@ fn primary_distribution_reward_rate_correct_calculation() {
     setup.set_aggregated_score(StakingModuleType::All, aggregated_score);
     setup.distribute_reward(reward, NO_ERR_MSG);
 
-    setup.assert_reward_rate(REWARD_TOKEN_ID, 1, reward_rate);
+    setup.assert_reward_rate(StakingModuleType::All, REWARD_TOKEN_ID, 1, reward_rate);
 }
 
 #[test]
@@ -82,5 +82,10 @@ fn secondary_distribution_reward_rate_correct_calculation() {
         NO_ERR_MSG,
     );
 
-    setup.assert_reward_rate(SECONDARY_REWARD_TOKEN_ID_1, 1, reward_rate);
+    setup.assert_reward_rate(
+        StakingModuleType::SnakesSfts,
+        SECONDARY_REWARD_TOKEN_ID_1,
+        1,
+        reward_rate,
+    );
 }

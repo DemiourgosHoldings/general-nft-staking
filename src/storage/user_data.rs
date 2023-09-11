@@ -63,6 +63,7 @@ pub trait UserDataStorageModule {
     fn reward_rate(
         &self,
         epoch: u64,
+        staking_module: &StakingModuleType,
         reward_token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<BigUint>;
 

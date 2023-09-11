@@ -296,10 +296,18 @@ where
             .assert_ok();
     }
 
-    pub fn assert_reward_rate(&mut self, token_id: &[u8], epoch: u64, expected_amount: u64) {
+    pub fn assert_reward_rate(
+        &mut self,
+        staking_module: StakingModuleType,
+        token_id: &[u8],
+        epoch: u64,
+        expected_amount: u64,
+    ) {
         self.b_mock
             .execute_query(&self.contract_wrapper, |sc| {
-                let reward_rate = sc.reward_rate(epoch, &managed_token_id!(token_id)).get();
+                let reward_rate = sc
+                    .reward_rate(epoch, &staking_module, &managed_token_id!(token_id))
+                    .get();
                 assert_eq!(managed_biguint!(expected_amount), reward_rate);
             })
             .assert_ok();

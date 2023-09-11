@@ -19,7 +19,7 @@ pub trait OwnerModule:
         let total_score = self.aggregated_staking_score(&StakingModuleType::All).get();
         let payment = self.call_value().single_esdt();
 
-        self.distribute_reward_handler(payment, total_score);
+        self.distribute_reward_handler(&StakingModuleType::All, payment, total_score);
     }
 
     #[only_owner]
@@ -30,7 +30,7 @@ pub trait OwnerModule:
         let total_score = self.aggregated_staking_score(&staking_module_type).get();
         let payment = self.call_value().single_esdt();
 
-        self.distribute_reward_handler(payment, total_score);
+        self.distribute_reward_handler(&staking_module_type, payment, total_score);
     }
 
     #[only_owner]
@@ -91,25 +91,41 @@ pub trait OwnerModule:
             .set(&new_general_aggregated_score);
     }
 
-    fn distribute_reward_handler(&self, payment: EsdtTokenPayment, total_score: BigUint) {
+    fn distribute_reward_handler(
+        &self,
+        staking_module_type: &StakingModuleType,
+        payment: EsdtTokenPayment,
+        total_score: BigUint,
+    ) {
         self.require_token_is_reward_token(&payment.token_identifier);
         let block_epoch = self.blockchain().get_block_epoch();
         let block_timestamp = self.blockchain().get_block_timestamp();
 
-        self.require_reward_not_distributed(block_epoch, &payment.token_identifier);
+        self.require_reward_not_distributed(
+            block_epoch,
+            staking_module_type,
+            &payment.token_identifier,
+        );
         let reward_rate = payment.amount / total_score;
 
-        self.reward_rate(block_epoch, &payment.token_identifier)
+        self.reward_rate(block_epoch, staking_module_type, &payment.token_identifier)
             .set(reward_rate);
         self.reward_distribution_timestamp(block_epoch, &payment.token_identifier)
             .set(&block_timestamp);
     }
 
-    fn require_reward_not_distributed(&self, epoch: u64, token_identifier: &TokenIdentifier) {
+    fn require_reward_not_distributed(
+        &self,
+        epoch: u64,
+        staking_module_type: &StakingModuleType,
+        token_identifier: &TokenIdentifier,
+    ) {
         require!(
             self.reward_distribution_timestamp(epoch, token_identifier)
                 .is_empty()
-                && self.reward_rate(epoch, token_identifier).is_empty(),
+                && self
+                    .reward_rate(epoch, staking_module_type, token_identifier)
+                    .is_empty(),
             ERR_REWARD_ALREADY_DISTRIBUTED
         );
     }
