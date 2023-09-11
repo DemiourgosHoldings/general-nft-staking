@@ -36,28 +36,29 @@ pub trait OwnerModule:
     #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
-        for reward_token_id in self.reward_token_identifiers().iter() {
-            self.update_deb_handler(&user_address, &new_deb, &reward_token_id);
-        }
-    }
-
-    fn update_deb_handler(
-        &self,
-        user_address: &ManagedAddress,
-        new_deb: &BigUint,
-        token_identifier: &TokenIdentifier,
-    ) {
-        let staking_module_type = self.stake_pool_type_configuration(token_identifier).get();
-        secure_rewards(self, &user_address, token_identifier, &staking_module_type);
         let deb_denomination = BigUint::from(DEB_DENOMINATION);
-        let mut old_deb = self.user_deb(user_address).get();
+        let mut old_deb = self.user_deb(&user_address).get();
         if &old_deb < &deb_denomination {
             old_deb = deb_denomination.clone();
         }
+
+        for reward_token_id in self.reward_token_identifiers().iter() {
+            let staking_module_type = self.stake_pool_type_configuration(&reward_token_id).get();
+            secure_rewards(self, &user_address, &reward_token_id, &staking_module_type);
+
+            self.update_score_handler(
+                &staking_module_type,
+                &user_address,
+                &new_deb,
+                &old_deb,
+                &deb_denomination,
+            );
+        }
+
         self.update_score_handler(
-            &staking_module_type,
-            user_address,
-            new_deb,
+            &StakingModuleType::All,
+            &user_address,
+            &new_deb,
             &old_deb,
             &deb_denomination,
         );
