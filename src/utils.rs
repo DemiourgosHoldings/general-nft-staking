@@ -12,17 +12,9 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let mut pending_rewards = match get_token_pending_reward_payment(
-        sc_ref,
-        address,
-        sc_ref.primary_reward_token_identifier().get(),
-        store_rewards,
-    ) {
-        Some(pending_reward) => ManagedVec::from_single_item(pending_reward),
-        None => ManagedVec::new(),
-    };
+    let mut pending_rewards = ManagedVec::new();
 
-    for token_id in sc_ref.secondary_reward_token_identifiers().iter() {
+    for token_id in sc_ref.reward_token_identifiers().iter() {
         match get_token_pending_reward_payment(sc_ref, address, token_id, store_rewards) {
             Some(pending_reward) => pending_rewards.push(pending_reward),
             None => continue,
@@ -90,7 +82,9 @@ where
 {
     let last_claimed_epoch = sc_ref.last_claimed_epoch(staking_module, address).get();
     let current_epoch = sc_ref.blockchain().get_block_epoch();
-    let user_score = sc_ref.aggregated_user_staking_score(address).get();
+    let user_score = sc_ref
+        .aggregated_user_staking_score(staking_module, address)
+        .get();
 
     let mut pending_reward = BigUint::zero();
     for current_epoch in last_claimed_epoch + 1..=current_epoch {

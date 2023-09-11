@@ -16,7 +16,7 @@ pub trait OwnerModule:
     #[payable("*")]
     #[endpoint(distributeGeneralReward)]
     fn distribute_reward(&self) {
-        let total_score = self.aggregated_staking_score().get();
+        let total_score = self.aggregated_staking_score(&StakingModuleType::All).get();
         let payment = self.call_value().single_esdt();
 
         self.distribute_reward_handler(payment, total_score);
@@ -27,9 +27,7 @@ pub trait OwnerModule:
     #[endpoint(distributeSecondaryReward)]
     fn distribute_secondary_reward(&self, target: TokenIdentifier) {
         let staking_module_type = self.stake_pool_type_configuration(&target).get();
-        let total_score = self
-            .aggregated_secondary_staking_score(&staking_module_type)
-            .get();
+        let total_score = self.aggregated_staking_score(&staking_module_type).get();
         let payment = self.call_value().single_esdt();
 
         self.distribute_reward_handler(payment, total_score);
@@ -38,21 +36,8 @@ pub trait OwnerModule:
     #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
-        let primary_reward_token_id = self.primary_reward_token_identifier().get();
-        self.update_deb_handler(
-            &user_address,
-            &new_deb,
-            &primary_reward_token_id,
-            &primary_reward_token_id,
-        );
-
-        for secondary_token_id in self.secondary_reward_token_identifiers().iter() {
-            self.update_deb_handler(
-                &user_address,
-                &new_deb,
-                &secondary_token_id,
-                &primary_reward_token_id,
-            );
+        for reward_token_id in self.reward_token_identifiers().iter() {
+            self.update_deb_handler(&user_address, &new_deb, &reward_token_id);
         }
     }
 
@@ -61,7 +46,6 @@ pub trait OwnerModule:
         user_address: &ManagedAddress,
         new_deb: &BigUint,
         token_identifier: &TokenIdentifier,
-        primary_reward_token_identifier: &TokenIdentifier,
     ) {
         let staking_module_type = self.stake_pool_type_configuration(token_identifier).get();
         secure_rewards(self, &user_address, token_identifier, &staking_module_type);
@@ -70,57 +54,27 @@ pub trait OwnerModule:
         if &old_deb < &deb_denomination {
             old_deb = deb_denomination.clone();
         }
-        if token_identifier == primary_reward_token_identifier {
-            self.update_primary_score_handler(user_address, new_deb, &old_deb, &deb_denomination);
-        } else {
-            self.update_secondary_score_handler(
-                user_address,
-                new_deb,
-                &old_deb,
-                &deb_denomination,
-                staking_module_type,
-            );
-        }
-    }
-
-    fn update_primary_score_handler(
-        &self,
-        user_address: &ManagedAddress,
-        new_deb: &BigUint,
-        old_deb: &BigUint,
-        deb_denomination: &BigUint,
-    ) {
-        let old_user_score = self.aggregated_user_staking_score(&user_address).get();
-        let old_general_aggregated_score = self.aggregated_staking_score().get();
-
-        let (new_user_score, new_general_aggregated_score) = apply_new_deb::<Self>(
-            &old_general_aggregated_score,
-            &old_user_score,
-            old_deb,
+        self.update_score_handler(
+            &staking_module_type,
+            user_address,
             new_deb,
-            deb_denomination,
+            &old_deb,
+            &deb_denomination,
         );
-
-        self.aggregated_user_staking_score(&user_address)
-            .set(new_user_score);
-        self.aggregated_staking_score()
-            .set(&new_general_aggregated_score);
     }
 
-    fn update_secondary_score_handler(
+    fn update_score_handler(
         &self,
+        staking_module_type: &StakingModuleType,
         user_address: &ManagedAddress,
         new_deb: &BigUint,
         old_deb: &BigUint,
         deb_denomination: &BigUint,
-        staking_module_type: StakingModuleType,
     ) {
         let old_user_score = self
-            .aggregated_user_secondary_staking_score(&staking_module_type, &user_address)
+            .aggregated_user_staking_score(staking_module_type, user_address)
             .get();
-        let old_general_aggregated_score = self
-            .aggregated_secondary_staking_score(&staking_module_type)
-            .get();
+        let old_general_aggregated_score = self.aggregated_staking_score(staking_module_type).get();
 
         let (new_user_score, new_general_aggregated_score) = apply_new_deb::<Self>(
             &old_general_aggregated_score,
@@ -130,9 +84,9 @@ pub trait OwnerModule:
             deb_denomination,
         );
 
-        self.aggregated_user_secondary_staking_score(&staking_module_type, user_address)
-            .set(&new_user_score);
-        self.aggregated_secondary_staking_score(&staking_module_type)
+        self.aggregated_user_staking_score(staking_module_type, user_address)
+            .set(new_user_score);
+        self.aggregated_staking_score(staking_module_type)
             .set(&new_general_aggregated_score);
     }
 
@@ -161,10 +115,8 @@ pub trait OwnerModule:
 
     fn require_token_is_reward_token(&self, incoming_token_identifier: &TokenIdentifier) {
         require!(
-            &self.primary_reward_token_identifier().get() == incoming_token_identifier
-                || self
-                    .secondary_reward_token_identifiers()
-                    .contains(incoming_token_identifier),
+            self.reward_token_identifiers()
+                .contains(incoming_token_identifier),
             ERR_INVALID_REWARD_TOKEN_ID
         );
     }

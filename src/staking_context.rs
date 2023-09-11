@@ -34,21 +34,25 @@ where
         let caller = sc_ref.blockchain().get_caller();
         let staking_module_type = sc_ref.stake_pool_type_configuration(payment_token_id).get();
 
-        let aggregated_score = sc_ref.aggregated_staking_score().get();
-        let aggregated_user_score = match sc_ref.aggregated_user_staking_score(&caller).is_empty() {
-            true => BigUint::zero(),
-            false => sc_ref.aggregated_user_staking_score(&caller).get(),
-        };
-        let secondary_aggregated_score = sc_ref
-            .aggregated_secondary_staking_score(&staking_module_type)
-            .get();
-        let secondary_aggregated_user_score = match sc_ref
-            .aggregated_user_secondary_staking_score(&staking_module_type, &caller)
+        let aggregated_score = sc_ref.aggregated_staking_score(&staking_module_type).get();
+        let aggregated_user_score = match sc_ref
+            .aggregated_user_staking_score(&StakingModuleType::All, &caller)
             .is_empty()
         {
             true => BigUint::zero(),
             false => sc_ref
-                .aggregated_user_secondary_staking_score(&staking_module_type, &caller)
+                .aggregated_user_staking_score(&StakingModuleType::All, &caller)
+                .get(),
+        };
+        let secondary_aggregated_score =
+            sc_ref.aggregated_staking_score(&staking_module_type).get();
+        let secondary_aggregated_user_score = match sc_ref
+            .aggregated_user_staking_score(&staking_module_type, &caller)
+            .is_empty()
+        {
+            true => BigUint::zero(),
+            false => sc_ref
+                .aggregated_user_staking_score(&staking_module_type, &caller)
                 .get(),
         };
 
@@ -94,13 +98,14 @@ where
     }
 
     fn secure_rewards(&self) {
-        let primary_reward_token_id = self.sc_ref.primary_reward_token_identifier().get();
-        secure_rewards(
-            self.sc_ref,
-            &self.caller,
-            &primary_reward_token_id,
-            &self.staking_module_type,
-        );
+        for reward_token_id in self.sc_ref.reward_token_identifiers().iter() {
+            secure_rewards(
+                self.sc_ref,
+                &self.caller,
+                &reward_token_id,
+                &self.staking_module_type,
+            );
+        }
     }
 
     fn update_primary_score(&self) {
@@ -110,10 +115,10 @@ where
             &self.aggregated_score - &self.aggregated_user_score + &new_user_score;
 
         self.sc_ref
-            .aggregated_user_staking_score(&self.caller)
+            .aggregated_user_staking_score(&StakingModuleType::All, &self.caller)
             .set(new_user_score);
         self.sc_ref
-            .aggregated_staking_score()
+            .aggregated_staking_score(&StakingModuleType::All)
             .set(new_aggregated_score);
     }
 
@@ -125,10 +130,10 @@ where
             + &new_user_score;
 
         self.sc_ref
-            .aggregated_user_secondary_staking_score(&self.staking_module_type, &self.caller)
+            .aggregated_user_staking_score(&self.staking_module_type, &self.caller)
             .set(new_user_score);
         self.sc_ref
-            .aggregated_secondary_staking_score(&self.staking_module_type)
+            .aggregated_staking_score(&self.staking_module_type)
             .set(new_aggregated_score);
     }
 }

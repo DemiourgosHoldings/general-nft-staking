@@ -15,7 +15,7 @@ use crate::setup::{
 fn simple_successful_primary_distribution() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, 1);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, 1);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 
@@ -27,7 +27,7 @@ fn simple_successful_primary_distribution() {
 fn double_primary_distribution_fails() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, 1);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, 1);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 
@@ -42,7 +42,7 @@ fn primary_distribution_reward_rate_correct_calculation() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
 
     let reward_rate = reward / aggregated_score;
-    setup.set_aggregated_score(aggregated_score);
+    setup.set_aggregated_score(StakingModuleType::All, aggregated_score);
     setup.distribute_reward(reward, NO_ERR_MSG);
 
     setup.assert_reward_rate(REWARD_TOKEN_ID, 1, reward_rate);
@@ -52,7 +52,7 @@ fn primary_distribution_reward_rate_correct_calculation() {
 fn simple_successful_secondary_distribution() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL2_TOKEN_ID, 1, 1)];
-    setup.set_secondary_token_score(POOL2_TOKEN_ID, 1);
+    setup.set_token_score(StakingModuleType::SnakesSfts, POOL2_TOKEN_ID, 1);
     setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
     setup.stake(&transfers, NO_ERR_MSG);
 
@@ -71,7 +71,7 @@ fn secondary_distribution_reward_rate_correct_calculation() {
     let aggregated_score = 100u64;
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
-    setup.set_secondary_aggregated_score(StakingModuleType::SnakesSfts, aggregated_score);
+    setup.set_aggregated_score(StakingModuleType::SnakesSfts, aggregated_score);
 
     let reward_rate = reward / aggregated_score;
 

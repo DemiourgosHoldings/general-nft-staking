@@ -5,7 +5,7 @@ use crate::{
     types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
 };
 
-use super::staking_module_type::VestaStakingModule;
+use super::staking_module_type::{StakingModuleType, VestaStakingModule};
 
 pub struct DefaultStakingModule<'a, C>
 where
@@ -16,6 +16,7 @@ where
     sc_ref: &'a C,
     impl_token_id: TokenIdentifier<C::Api>,
     user_address: ManagedAddress<C::Api>,
+    pub module_type: StakingModuleType,
 }
 
 impl<'a, C> DefaultStakingModule<'a, C>
@@ -28,11 +29,13 @@ where
         sc_ref: &'a C,
         impl_token_id: TokenIdentifier<C::Api>,
         user_address: ManagedAddress<C::Api>,
+        module_type: StakingModuleType,
     ) -> Self {
         Self {
             sc_ref,
             impl_token_id,
             user_address,
+            module_type,
         }
     }
 
@@ -56,11 +59,17 @@ where
         let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
-        let base_score = BigUint::from(self.sc_ref.base_asset_score(&self.impl_token_id).get());
+        let base_score = BigUint::from(
+            self.sc_ref
+                .base_asset_score(&self.impl_token_id, &StakingModuleType::All)
+                .get(),
+        );
         for staked_nft_info in staked_nft_nonces.iter() {
-            let asset_nonce_score = self
-                .sc_ref
-                .nonce_asset_score(&self.impl_token_id, staked_nft_info.nonce);
+            let asset_nonce_score = self.sc_ref.nonce_asset_score(
+                &self.impl_token_id,
+                staked_nft_info.nonce,
+                &StakingModuleType::All,
+            );
 
             let unit_score;
             if !asset_nonce_score.is_empty() {
@@ -144,13 +153,15 @@ where
         let mut score = BigUint::zero();
         let base_score = BigUint::from(
             self.sc_ref
-                .secondary_base_asset_score(&self.impl_token_id)
+                .base_asset_score(&self.impl_token_id, &self.module_type)
                 .get(),
         );
         for staked_nft_info in staked_nft_nonces.iter() {
-            let asset_nonce_score = self
-                .sc_ref
-                .secondary_nonce_asset_score(&self.impl_token_id, staked_nft_info.nonce);
+            let asset_nonce_score = self.sc_ref.nonce_asset_score(
+                &self.impl_token_id,
+                staked_nft_info.nonce,
+                &self.module_type,
+            );
 
             let unit_score;
             if !asset_nonce_score.is_empty() {

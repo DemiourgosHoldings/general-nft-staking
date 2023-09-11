@@ -29,12 +29,18 @@ pub trait UserDataStorageModule {
     // primary reward storage
     #[view(getAggregatedStakingScore)]
     #[storage_mapper("aggregated_staking_score")]
-    fn aggregated_staking_score(&self) -> SingleValueMapper<BigUint>;
+    fn aggregated_staking_score(
+        &self,
+        staking_module: &StakingModuleType,
+    ) -> SingleValueMapper<BigUint>;
 
     #[view(getAggregatedUserStakingScore)]
     #[storage_mapper("aggregated_user_staking_score")]
-    fn aggregated_user_staking_score(&self, address: &ManagedAddress)
-        -> SingleValueMapper<BigUint>;
+    fn aggregated_user_staking_score(
+        &self,
+        staking_module: &StakingModuleType,
+        address: &ManagedAddress,
+    ) -> SingleValueMapper<BigUint>;
 
     #[view(getPendingRewards)]
     #[storage_mapper("pending_rewards")]
@@ -67,20 +73,4 @@ pub trait UserDataStorageModule {
         epoch: u64,
         token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<u64>;
-
-    // secondary reward storage
-    #[view(getAggregatedSecondaryStakingScore)]
-    #[storage_mapper("aggregated_secondary_staking_score")]
-    fn aggregated_secondary_staking_score(
-        &self,
-        staking_module: &StakingModuleType,
-    ) -> SingleValueMapper<BigUint>;
-
-    #[view(getAggregatedUserSecondaryStakingScore)]
-    #[storage_mapper("aggregated_user_secondary_staking_score")]
-    fn aggregated_user_secondary_staking_score(
-        &self,
-        staking_module: &StakingModuleType,
-        address: &ManagedAddress,
-    ) -> SingleValueMapper<BigUint>;
 }

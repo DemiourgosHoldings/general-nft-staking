@@ -16,11 +16,11 @@ fn successful_claim_rewards() {
 
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, single_nft_score);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, single_nft_score);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 
-    setup.set_aggregated_score(aggregated_score);
+    setup.set_aggregated_score(StakingModuleType::All, aggregated_score);
     setup.distribute_reward(reward, NO_ERR_MSG);
 
     let expected_reward = reward * single_nft_score as u64 / aggregated_score;
@@ -35,7 +35,7 @@ fn successful_claim_rewards() {
 fn double_claim_rewards_fail() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, 100);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, 100);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 
@@ -50,7 +50,7 @@ fn all_epochs_claimed() {
     let distributed_reward = 100_000;
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, 100);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, 100);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 
@@ -71,7 +71,7 @@ fn all_epochs_claimed() {
 fn not_distributed_epoch_not_claimed() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
-    setup.set_token_score(POOL1_TOKEN_ID, 100);
+    setup.set_token_score(StakingModuleType::All, POOL1_TOKEN_ID, 100);
     setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
     setup.stake(&transfers, NO_ERR_MSG);
 

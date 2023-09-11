@@ -1,6 +1,9 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
-use super::{default::DefaultStakingModule, staking_module_type::VestaStakingModule};
+use super::{
+    default::DefaultStakingModule,
+    staking_module_type::{StakingModuleType, VestaStakingModule},
+};
 use crate::{
     constants::{DEB_DENOMINATION, VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE},
     types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
@@ -28,9 +31,14 @@ where
         sc_ref: &'a C,
         impl_token_id: TokenIdentifier<C::Api>,
         user_address: ManagedAddress<C::Api>,
+        module_type: StakingModuleType,
     ) -> Self {
-        let default_impl =
-            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address.clone());
+        let default_impl = DefaultStakingModule::new(
+            sc_ref,
+            impl_token_id.clone(),
+            user_address.clone(),
+            module_type,
+        );
         Self {
             sc_ref,
             impl_token_id,
@@ -68,9 +76,17 @@ where
     fn get_base_user_score(&self) -> BigUint<C::Api> {
         let default_base_score = self.default_impl.get_base_user_score();
         let full_sets = self.count_full_sets();
-        let full_set_score = match self.sc_ref.full_set_score(&self.impl_token_id).is_empty() {
+        let full_set_score = match self
+            .sc_ref
+            .full_set_score(&self.impl_token_id, &self.default_impl.module_type)
+            .is_empty()
+        {
             true => BigUint::zero(),
-            false => BigUint::from(self.sc_ref.full_set_score(&self.impl_token_id).get()),
+            false => BigUint::from(
+                self.sc_ref
+                    .full_set_score(&self.impl_token_id, &self.default_impl.module_type)
+                    .get(),
+            ),
         };
 
         default_base_score + &full_sets * &full_set_score

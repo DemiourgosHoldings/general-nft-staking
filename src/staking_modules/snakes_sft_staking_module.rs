@@ -1,6 +1,9 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier};
 
-use super::{default::DefaultStakingModule, staking_module_type::VestaStakingModule};
+use super::{
+    default::DefaultStakingModule,
+    staking_module_type::{StakingModuleType, VestaStakingModule},
+};
 use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
 
 pub struct SnakesSftStakingModule<'a, C>
@@ -25,9 +28,14 @@ where
         sc_ref: &'a C,
         impl_token_id: TokenIdentifier<C::Api>,
         user_address: ManagedAddress<C::Api>,
+        module_type: StakingModuleType,
     ) -> Self {
-        let default_impl =
-            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address.clone());
+        let default_impl = DefaultStakingModule::new(
+            sc_ref,
+            impl_token_id.clone(),
+            user_address.clone(),
+            module_type,
+        );
         Self {
             sc_ref,
             impl_token_id,
