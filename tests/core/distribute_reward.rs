@@ -10,7 +10,7 @@ use crate::setup::{
 };
 
 #[test]
-fn simple_successful_distribution() {
+fn simple_successful_primary_distribution() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
     setup.set_token_score(POOL1_TOKEN_ID, 1);
@@ -22,7 +22,7 @@ fn simple_successful_distribution() {
 }
 
 #[test]
-fn double_distribution_fails() {
+fn double_primary_distribution_fails() {
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
     let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
     setup.set_token_score(POOL1_TOKEN_ID, 1);
@@ -34,7 +34,7 @@ fn double_distribution_fails() {
 }
 
 #[test]
-fn distribution_reward_rate_correct() {
+fn primary_distribution_reward_rate_correct_calculation() {
     let reward = 100_000u64;
     let aggregated_score = 100u64;
     let mut setup = ContractSetup::new(nft_staking::contract_obj);
