@@ -45,7 +45,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
 {
     let pending_reward =
-        get_total_token_pending_reward(sc_ref, address, &token_identifier, &staking_module_type);
+        get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module_type);
     if &pending_reward == &0 {
         return None;
     }
@@ -124,8 +124,10 @@ pub fn secure_rewards<'a, C>(
     C: crate::storage::score::ScoreStorageModule,
 {
     let pending_rewards =
-        get_total_token_pending_reward(sc_ref, address, token_identifier, staking_module);
-
+        get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module);
+    if &pending_rewards == &0 {
+        return;
+    }
     let block_epoch = sc_ref.blockchain().get_block_epoch();
     if sc_ref
         .reward_rate(block_epoch, staking_module, token_identifier)
@@ -142,7 +144,7 @@ pub fn secure_rewards<'a, C>(
 
     sc_ref
         .pending_rewards(address, token_identifier)
-        .set(pending_rewards);
+        .update(|old_value| *old_value += pending_rewards);
 }
 
 pub fn claim_all_pending_rewards<'a, C>(
