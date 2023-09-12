@@ -215,6 +215,24 @@ where
             .assert_ok();
     }
 
+    pub fn register_token_as_eligible_reward_for_pool(
+        &mut self,
+        reward_token_id: &[u8],
+        pool_type: StakingModuleType,
+    ) {
+        self.b_mock
+            .execute_tx(
+                &self.owner_address,
+                &self.contract_wrapper,
+                &rust_biguint!(0),
+                |sc| {
+                    sc.reward_token_to_staking_module_map(&managed_token_id!(reward_token_id))
+                        .insert(pool_type);
+                },
+            )
+            .assert_ok();
+    }
+
     pub fn distribute_reward(&mut self, amount: u64, err_msg: &str) {
         let tx_result = self.b_mock.execute_esdt_transfer(
             &self.owner_address,

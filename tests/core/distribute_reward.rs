@@ -56,6 +56,11 @@ fn simple_successful_secondary_distribution() {
     setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
     setup.stake(&transfers, NO_ERR_MSG);
 
+    setup.register_token_as_eligible_reward_for_pool(
+        SECONDARY_REWARD_TOKEN_ID_1,
+        StakingModuleType::SnakesSfts,
+    );
+
     setup.distribute_secondary_reward(
         SECONDARY_REWARD_TOKEN_ID_1,
         POOL2_TOKEN_ID,
