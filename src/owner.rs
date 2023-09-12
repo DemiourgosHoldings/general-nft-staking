@@ -133,4 +133,65 @@ pub trait OwnerModule:
             ERR_INVALID_REWARD_TOKEN_ID
         );
     }
+
+    #[only_owner]
+    #[endpoint(createPool)]
+    fn register_new_staking_pool(
+        &self,
+        collection_token_identifier: TokenIdentifier,
+        staking_module_type: StakingModuleType,
+    ) {
+        self.stake_pool_type_configuration(&collection_token_identifier)
+            .set(staking_module_type);
+    }
+
+    #[only_owner]
+    #[endpoint(setBaseAssetScore)]
+    fn set_base_asset_score(
+        &self,
+        collection_token_identifier: &TokenIdentifier,
+        staking_module: &StakingModuleType,
+        score: usize,
+    ) {
+        self.base_asset_score(collection_token_identifier, staking_module)
+            .set(&score);
+    }
+
+    #[only_owner]
+    #[endpoint(setNonceAssetScore)]
+    fn set_nonce_asset_score(
+        &self,
+        collection_token_identifier: &TokenIdentifier,
+        staking_module: &StakingModuleType,
+        score: usize,
+        nonces: MultiValueEncoded<u64>,
+    ) {
+        for nonce in nonces.to_vec().iter() {
+            self.nonce_asset_score(collection_token_identifier, nonce, staking_module)
+                .set(&score);
+        }
+    }
+
+    #[only_owner]
+    #[endpoint(registerRewardToken)]
+    fn register_reward_token(
+        &self,
+        reward_token_identifier: TokenIdentifier,
+        staking_module_type: StakingModuleType,
+    ) {
+        self.reward_token_to_staking_module_map(&reward_token_identifier)
+            .insert(staking_module_type);
+    }
+
+    #[only_owner]
+    #[endpoint(setFullSetScore)]
+    fn set_full_set_score(
+        &self,
+        collection_token_identifier: &TokenIdentifier,
+        staking_module: &StakingModuleType,
+        score: usize,
+    ) {
+        self.full_set_score(collection_token_identifier, staking_module)
+            .set(&score);
+    }
 }
