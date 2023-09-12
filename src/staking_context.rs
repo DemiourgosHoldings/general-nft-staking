@@ -20,6 +20,7 @@ where
     aggregated_user_score: BigUint<C::Api>,
     secondary_aggregated_score: BigUint<C::Api>,
     secondary_aggregated_user_score: BigUint<C::Api>,
+    initial_pool_user_score: BigUint<C::Api>,
     staking_module_type: StakingModuleType,
     staking_module_impl: StakingModuleTypeMapping<'a, C>,
 }
@@ -60,6 +61,9 @@ where
 
         let staking_module_impl =
             staking_module_type.get_module(sc_ref, payment_token_id.clone(), caller.clone());
+
+        let initial_pool_user_score = staking_module_impl.get_final_user_score();
+
         Self {
             sc_ref,
             caller,
@@ -67,6 +71,7 @@ where
             aggregated_user_score,
             secondary_aggregated_score,
             secondary_aggregated_user_score,
+            initial_pool_user_score,
             staking_module_type,
             staking_module_impl,
         }
@@ -111,10 +116,16 @@ where
     }
 
     fn update_primary_score(&self) {
-        let new_user_score = self.staking_module_impl.get_final_user_score();
+        let new_pool_user_score = self.staking_module_impl.get_final_user_score();
+        if &new_pool_user_score == &self.initial_pool_user_score {
+            return;
+        }
 
         let new_aggregated_score =
-            &self.aggregated_score + &new_user_score - &self.aggregated_user_score;
+            &self.aggregated_score + &new_pool_user_score - &self.initial_pool_user_score;
+
+        let new_user_score =
+            &self.aggregated_user_score + &new_pool_user_score - &self.initial_pool_user_score;
 
         self.sc_ref
             .aggregated_user_staking_score(&StakingModuleType::All, &self.caller)
@@ -126,6 +137,9 @@ where
 
     fn update_secondary_score(&self) {
         let new_user_score = self.staking_module_impl.get_final_secondary_score();
+        if &new_user_score == &self.secondary_aggregated_user_score {
+            return;
+        }
 
         let new_aggregated_score = &self.secondary_aggregated_score
             - &self.secondary_aggregated_user_score
