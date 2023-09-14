@@ -16,9 +16,9 @@ where
 {
     sc_ref: &'a C,
     caller: ManagedAddress<C::Api>,
-    aggregated_score: BigUint<C::Api>,
+    aggregated_general_score: BigUint<C::Api>,
     aggregated_user_score: BigUint<C::Api>,
-    secondary_aggregated_score: BigUint<C::Api>,
+    secondary_aggregated_general_score: BigUint<C::Api>,
     secondary_aggregated_user_score: BigUint<C::Api>,
     initial_pool_user_score: BigUint<C::Api>,
     staking_module_type: StakingModuleType,
@@ -35,7 +35,7 @@ where
         let caller = sc_ref.blockchain().get_caller();
         let staking_module_type = sc_ref.stake_pool_type_configuration(payment_token_id).get();
 
-        let aggregated_score = sc_ref
+        let aggregated_general_score = sc_ref
             .aggregated_staking_score(&StakingModuleType::All)
             .get();
         let aggregated_user_score = match sc_ref
@@ -47,7 +47,7 @@ where
                 .aggregated_user_staking_score(&StakingModuleType::All, &caller)
                 .get(),
         };
-        let secondary_aggregated_score =
+        let secondary_aggregated_general_score =
             sc_ref.aggregated_staking_score(&staking_module_type).get();
         let secondary_aggregated_user_score = match sc_ref
             .aggregated_user_staking_score(&staking_module_type, &caller)
@@ -67,9 +67,9 @@ where
         Self {
             sc_ref,
             caller,
-            aggregated_score,
+            aggregated_general_score,
             aggregated_user_score,
-            secondary_aggregated_score,
+            secondary_aggregated_general_score,
             secondary_aggregated_user_score,
             initial_pool_user_score,
             staking_module_type,
@@ -121,8 +121,8 @@ where
             return;
         }
 
-        let new_aggregated_score =
-            &self.aggregated_score + &new_pool_user_score - &self.initial_pool_user_score;
+        let new_aggregated_general_score =
+            &self.aggregated_general_score + &new_pool_user_score - &self.initial_pool_user_score;
 
         let new_user_score =
             &self.aggregated_user_score + &new_pool_user_score - &self.initial_pool_user_score;
@@ -132,7 +132,7 @@ where
             .set(new_user_score);
         self.sc_ref
             .aggregated_staking_score(&StakingModuleType::All)
-            .set(new_aggregated_score);
+            .set(new_aggregated_general_score);
     }
 
     fn update_secondary_score(&self) {
@@ -141,7 +141,7 @@ where
             return;
         }
 
-        let new_aggregated_score = &self.secondary_aggregated_score
+        let new_aggregated_general_score = &self.secondary_aggregated_general_score
             - &self.secondary_aggregated_user_score
             + &new_user_score;
 
@@ -150,6 +150,6 @@ where
             .set(new_user_score);
         self.sc_ref
             .aggregated_staking_score(&self.staking_module_type)
-            .set(new_aggregated_score);
+            .set(new_aggregated_general_score);
     }
 }
