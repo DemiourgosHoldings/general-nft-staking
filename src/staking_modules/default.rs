@@ -95,7 +95,7 @@ where
     }
 
     fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
-        let initial_staked_nfts_count = self.staked_assets.len();
+        let mut total_unstaked_quantity = BigUint::zero();
 
         let mut remaining_staked_nfts = ManagedVec::new();
         for staked_nft in self.staked_assets.iter() {
@@ -110,19 +110,20 @@ where
             }
 
             if &staked_nft.quantity == &unstake_nonce_quantity {
+                total_unstaked_quantity += &staked_nft.quantity;
                 continue;
             }
 
+            total_unstaked_quantity += &unstake_nonce_quantity;
             remaining_staked_nfts.push(NonceQtyPair {
                 nonce: staked_nft.nonce,
                 quantity: &staked_nft.quantity - &unstake_nonce_quantity,
             });
         }
 
-        let remaining_staked_nfts_count = remaining_staked_nfts.len();
         self.staked_assets = remaining_staked_nfts;
 
-        initial_staked_nfts_count != remaining_staked_nfts_count
+        &total_unstaked_quantity > &0
     }
 }
 
