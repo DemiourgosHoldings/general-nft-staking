@@ -1,5 +1,7 @@
 pub const NO_ERR_MSG: &str = "";
 
+pub const NONCES_PER_TOKEN: u64 = 100;
+
 pub const POOL1_TOKEN_ID: &[u8] = b"NFTPOOL1-abcdef";
 pub const POOL1_QUANTITY_PER_NONCE: u32 = 1;
 

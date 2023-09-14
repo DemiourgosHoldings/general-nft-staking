@@ -12,8 +12,9 @@ use nft_staking::types::start_unbonding_payload::StartUnbondingPayload;
 use nft_staking::NftStakingContract;
 
 use self::constants::{
-    NO_ERR_MSG, POOL1_QUANTITY_PER_NONCE, POOL1_TOKEN_ID, POOL2_QUANTITY_PER_NONCE, POOL2_TOKEN_ID,
-    REWARD_TOKEN_ID, SECONDARY_REWARD_TOKEN_ID_1, SECONDARY_REWARD_TOKEN_ID_2,
+    NONCES_PER_TOKEN, NO_ERR_MSG, POOL1_QUANTITY_PER_NONCE, POOL1_TOKEN_ID,
+    POOL2_QUANTITY_PER_NONCE, POOL2_TOKEN_ID, REWARD_TOKEN_ID, SECONDARY_REWARD_TOKEN_ID_1,
+    SECONDARY_REWARD_TOKEN_ID_2,
 };
 use self::types::{NonceQtyPair, TransferAssetType, TransferAssetTypeParserVec};
 use nft_staking::types::nonce_qty_pair::NonceQtyPair as NonceQtyPairSc;
@@ -353,6 +354,21 @@ where
         assert_eq!(rust_biguint!(expected_balance), balance);
     }
 
+    pub fn assert_user_nft_balance(
+        &mut self,
+        token_id: &[u8],
+        token_nonce: u64,
+        expected_balance: u64,
+    ) {
+        self.b_mock.check_nft_balance(
+            &self.user_address,
+            token_id,
+            token_nonce,
+            &rust_biguint!(expected_balance),
+            Some(b""),
+        );
+    }
+
     pub fn update_user_deb(&mut self, new_deb: u64) {
         let address = self.user_address.clone();
         self.b_mock
@@ -402,7 +418,7 @@ where
     ) {
         let pool_1_quantity = rust_biguint!(POOL1_QUANTITY_PER_NONCE);
         let pool_2_quantity = rust_biguint!(POOL2_QUANTITY_PER_NONCE);
-        for i in 0..100 {
+        for i in 1..=NONCES_PER_TOKEN {
             b_mock.set_nft_balance(address, POOL1_TOKEN_ID, i, &pool_1_quantity, b"");
             b_mock.set_nft_balance(address, POOL2_TOKEN_ID, i, &pool_2_quantity, b"");
         }
