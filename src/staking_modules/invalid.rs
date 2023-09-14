@@ -26,10 +26,10 @@ where
         BigUint::zero()
     }
 
-    fn add_to_storage(&self, _nonce: u64, _amount: BigUint<C::Api>) {}
+    fn add_to_storage(&mut self, _nonce: u64, _amount: BigUint<C::Api>) {}
 
     fn start_unbonding(
-        &self,
+        &mut self,
         _payload: crate::types::start_unbonding_payload::StartUnbondingPayload<<C>::Api>,
     ) -> bool {
         true

@@ -70,7 +70,7 @@ where
         }
     }
 
-    pub fn add_to_stake(&self, payments: &ManagedVec<C::Api, EsdtTokenPayment<C::Api>>) {
+    pub fn add_to_stake(&mut self, payments: &ManagedVec<C::Api, EsdtTokenPayment<C::Api>>) {
         self.secure_rewards();
 
         for payment in payments.iter() {
@@ -82,7 +82,7 @@ where
         self.update_secondary_score();
     }
 
-    pub fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool {
+    pub fn start_unbonding(&mut self, payload: StartUnbondingPayload<C::Api>) -> bool {
         self.secure_rewards();
 
         let unbonding_result = self.staking_module_impl.start_unbonding(payload.clone());

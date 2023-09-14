@@ -42,7 +42,7 @@ pub trait NftStakingContract:
     fn stake(&self) {
         let payments = self.call_value().all_esdt_transfers();
         self.require_same_token_id(&payments);
-        let context = StakingContext::new(self, &payments.get(0).token_identifier);
+        let mut context = StakingContext::new(self, &payments.get(0).token_identifier);
         context.add_to_stake(&payments);
     }
 
@@ -50,7 +50,7 @@ pub trait NftStakingContract:
     fn start_unbonding(&self, payload: StartUnbondingPayload<Self::Api>) {
         self.require_unbonding_is_valid(&payload);
 
-        let context = StakingContext::new(self, &payload.token_identifier);
+        let mut context = StakingContext::new(self, &payload.token_identifier);
         let is_unbonding_successful = context.start_unbonding(payload);
         require!(is_unbonding_successful, ERR_FAILED_UNBONDING);
     }

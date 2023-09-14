@@ -1,4 +1,4 @@
-use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier};
+use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
 use super::{
     default::DefaultStakingModule,
@@ -12,10 +12,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    sc_ref: &'a C,
-    impl_token_id: TokenIdentifier<C::Api>,
     default_impl: DefaultStakingModule<'a, C>,
-    user_address: ManagedAddress<C::Api>,
 }
 
 impl<'a, C> SnakesSftStakingModule<'a, C>
@@ -30,18 +27,9 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        let default_impl = DefaultStakingModule::new(
-            sc_ref,
-            impl_token_id.clone(),
-            user_address.clone(),
-            module_type,
-        );
-        Self {
-            sc_ref,
-            impl_token_id,
-            default_impl,
-            user_address,
-        }
+        let default_impl =
+            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address, module_type);
+        Self { default_impl }
     }
 }
 
@@ -62,14 +50,12 @@ where
         self.default_impl.get_base_user_score(staking_module_type)
     }
 
-    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
-        let mut staked_nfts = self
-            .sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .remove(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
-
-        let existing_item_index = staked_nfts.iter().position(|p| p.nonce == nonce);
+    fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
+        let existing_item_index = self
+            .default_impl
+            .staked_assets
+            .iter()
+            .position(|p| p.nonce == nonce);
         let item_to_insert;
         if existing_item_index.is_none() {
             item_to_insert = NonceQtyPair {
@@ -78,22 +64,18 @@ where
             };
         } else {
             let index_to_remove = existing_item_index.unwrap();
-            let existing_item = staked_nfts.get(index_to_remove);
-            staked_nfts.remove(index_to_remove);
+            let existing_item = self.default_impl.staked_assets.get(index_to_remove);
+            self.default_impl.staked_assets.remove(index_to_remove);
             item_to_insert = NonceQtyPair {
                 nonce,
                 quantity: existing_item.quantity + amount,
             };
         }
 
-        staked_nfts.push(item_to_insert);
-
-        self.sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .insert(self.user_address.clone(), staked_nfts);
+        self.default_impl.staked_assets.push(item_to_insert);
     }
 
-    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+    fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
         self.default_impl.start_unbonding(payload)
     }
 }

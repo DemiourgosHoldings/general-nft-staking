@@ -127,8 +127,8 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self, module_type: &StakingModuleType) -> BigUint<C::Api>;
-    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>);
-    fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool;
+    fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>);
+    fn start_unbonding(&mut self, payload: StartUnbondingPayload<C::Api>) -> bool;
 }
 
 impl<'a, C> VestaStakingModule<'a, C> for StakingModuleTypeMapping<'a, C>
@@ -152,7 +152,7 @@ where
         }
     }
 
-    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
+    fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
         match self {
             StakingModuleTypeMapping::Invalid(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::CodingDivisionSfts(module) => {
@@ -167,7 +167,7 @@ where
         }
     }
 
-    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+    fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
         match self {
             StakingModuleTypeMapping::Invalid(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::CodingDivisionSfts(module) => module.start_unbonding(payload),

@@ -52,7 +52,7 @@ where
     ) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
         sc_ref
             .staked_nfts(&impl_token_id)
-            .get(&user_address)
+            .remove(&user_address)
             .unwrap_or_else(|| ManagedVec::new())
     }
 }
@@ -64,15 +64,13 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
-        let staked_nft_nonces = self.get_staked_nfts_data();
-
         let mut score = BigUint::zero();
         let base_score = BigUint::from(
             self.sc_ref
                 .base_asset_score(&self.impl_token_id, staking_module_type)
                 .get(),
         );
-        for staked_nft_info in staked_nft_nonces.iter() {
+        for staked_nft_info in self.staked_assets.iter() {
             let asset_nonce_score = self.sc_ref.nonce_asset_score(
                 &self.impl_token_id,
                 staked_nft_info.nonce,
@@ -92,27 +90,15 @@ where
         score
     }
 
-    fn add_to_storage(&self, nonce: u64, quantity: BigUint<C::Api>) {
-        let mut staked_nfts = self.get_staked_nfts_data();
-
-        staked_nfts.push(NonceQtyPair { nonce, quantity });
-
-        self.sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .insert(self.user_address.clone(), staked_nfts);
+    fn add_to_storage(&mut self, nonce: u64, quantity: BigUint<C::Api>) {
+        self.staked_assets.push(NonceQtyPair { nonce, quantity });
     }
 
-    fn start_unbonding(&self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
-        let staked_nfts = self
-            .sc_ref
-            .staked_nfts(&payload.token_identifier)
-            .remove(&self.user_address)
-            .unwrap_or_else(|| ManagedVec::new());
-
-        let initial_staked_nfts_count = staked_nfts.len();
+    fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
+        let initial_staked_nfts_count = self.staked_assets.len();
 
         let mut remaining_staked_nfts = ManagedVec::new();
-        for staked_nft in staked_nfts.iter() {
+        for staked_nft in self.staked_assets.iter() {
             let unstake_nonce_quantity = payload.get_nonce_quantity(staked_nft.nonce);
             if &unstake_nonce_quantity == &BigUint::zero() {
                 remaining_staked_nfts.push(staked_nft);
@@ -139,5 +125,19 @@ where
             .insert(self.user_address.clone(), remaining_staked_nfts);
 
         initial_staked_nfts_count != remaining_staked_nfts_count
+    }
+}
+
+impl<'a, C> Drop for DefaultStakingModule<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+{
+    fn drop(&mut self) {
+        // commit changes to storage for the mutable fields
+        self.sc_ref
+            .staked_nfts(&self.impl_token_id)
+            .insert(self.user_address.clone(), self.staked_assets.clone());
     }
 }
