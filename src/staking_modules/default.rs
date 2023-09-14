@@ -5,7 +5,7 @@ use crate::{
     types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
 };
 
-use super::staking_module_type::{StakingModuleType, VestaStakingModule};
+use super::staking_module_type::{self, StakingModuleType, VestaStakingModule};
 
 pub struct DefaultStakingModule<'a, C>
 where
@@ -47,28 +47,21 @@ where
             .get(&self.user_address)
             .unwrap_or_else(|| ManagedVec::new())
     }
-}
 
-impl<'a, C> VestaStakingModule<'a, C> for DefaultStakingModule<'a, C>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::score::ScoreStorageModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-{
-    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
+    pub fn get_user_score_temp(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
         let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
         let base_score = BigUint::from(
             self.sc_ref
-                .base_asset_score(&self.impl_token_id, &StakingModuleType::All)
+                .base_asset_score(&self.impl_token_id, staking_module_type)
                 .get(),
         );
         for staked_nft_info in staked_nft_nonces.iter() {
             let asset_nonce_score = self.sc_ref.nonce_asset_score(
                 &self.impl_token_id,
                 staked_nft_info.nonce,
-                &StakingModuleType::All,
+                staking_module_type,
             );
 
             let unit_score;
@@ -82,6 +75,17 @@ where
         }
 
         score
+    }
+}
+
+impl<'a, C> VestaStakingModule<'a, C> for DefaultStakingModule<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+{
+    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
+        self.get_user_score_temp(&StakingModuleType::All)
     }
 
     fn get_final_user_score(&self) -> BigUint<C::Api> {
@@ -148,31 +152,6 @@ where
     }
 
     fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        let staked_nft_nonces = self.get_staked_nfts_data();
-
-        let mut score = BigUint::zero();
-        let base_score = BigUint::from(
-            self.sc_ref
-                .base_asset_score(&self.impl_token_id, &self.module_type)
-                .get(),
-        );
-        for staked_nft_info in staked_nft_nonces.iter() {
-            let asset_nonce_score = self.sc_ref.nonce_asset_score(
-                &self.impl_token_id,
-                staked_nft_info.nonce,
-                &self.module_type,
-            );
-
-            let unit_score;
-            if !asset_nonce_score.is_empty() {
-                unit_score = BigUint::from(asset_nonce_score.get());
-            } else {
-                unit_score = base_score.clone();
-            }
-
-            score += &unit_score * &staked_nft_info.quantity;
-        }
-
-        score
+        self.get_user_score_temp(&self.module_type)
     }
 }

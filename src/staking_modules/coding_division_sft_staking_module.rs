@@ -65,17 +65,13 @@ where
 
         full_sets
     }
-}
 
-impl<'a, C> VestaStakingModule<'a, C> for CodingDivisionSftStakingModule<'a, C>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::score::ScoreStorageModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-{
-    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
-        let default_base_score = self.default_impl.get_base_user_score(&staking_module_type);
+    fn apply_full_set_bonus(&self, default_base_score: BigUint<C::Api>) -> BigUint<C::Api> {
         let full_sets = self.count_full_sets();
+        if &full_sets == &0 {
+            return default_base_score;
+        }
+
         let full_set_score = match self
             .sc_ref
             .full_set_score(&self.impl_token_id, &StakingModuleType::All)
@@ -90,6 +86,19 @@ where
         };
 
         default_base_score + &full_sets * &full_set_score
+    }
+}
+
+impl<'a, C> VestaStakingModule<'a, C> for CodingDivisionSftStakingModule<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+{
+    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
+        let default_base_score = self.default_impl.get_base_user_score(&staking_module_type);
+
+        self.apply_full_set_bonus(default_base_score)
     }
 
     fn get_final_user_score(&self) -> BigUint<C::Api> {

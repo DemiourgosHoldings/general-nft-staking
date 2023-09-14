@@ -51,11 +51,15 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    // Snakes don't get any share from the primary reward consisting of 15% of total AURYN emission
-    // because they get a share from the secondary reward consisting of 5% of total AURYN emission
-    // Hence why the base score and final score are 0
     fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
-        BigUint::zero()
+        // Snakes don't get any share from the primary reward consisting of 15% of total AURYN emission
+        // because they get a share from the secondary reward consisting of 5% of total AURYN emission
+        // Hence why the base score for "All" is 0
+        if staking_module_type == &StakingModuleType::All {
+            return BigUint::zero();
+        }
+
+        self.default_impl.get_user_score_temp(staking_module_type)
     }
 
     fn get_final_user_score(&self) -> BigUint<C::Api> {
