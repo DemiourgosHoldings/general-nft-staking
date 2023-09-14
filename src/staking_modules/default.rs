@@ -55,7 +55,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    fn get_base_user_score(&self) -> BigUint<C::Api> {
+    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
         let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
@@ -85,7 +85,7 @@ where
     }
 
     fn get_final_user_score(&self) -> BigUint<C::Api> {
-        let base_score = self.get_base_user_score();
+        let base_score = self.get_base_user_score(&self.module_type);
         let deb_denomination = BigUint::from(DEB_DENOMINATION);
 
         let user_deb = match self.sc_ref.user_deb(&self.user_address).is_empty() {

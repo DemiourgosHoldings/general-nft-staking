@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use multiversx_sc::types::BigUint;
 
-use super::staking_module_type::VestaStakingModule;
+use super::staking_module_type::{StakingModuleType, VestaStakingModule};
 
 pub struct InvalidStakingModule<'a, C> {
     _phantom: PhantomData<&'a C>,
@@ -22,7 +22,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    fn get_base_user_score(&self) -> BigUint<C::Api> {
+    fn get_base_user_score(&self, _: &StakingModuleType) -> BigUint<C::Api> {
         BigUint::zero()
     }
 

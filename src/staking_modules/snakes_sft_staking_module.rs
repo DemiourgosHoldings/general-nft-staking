@@ -54,7 +54,7 @@ where
     // Snakes don't get any share from the primary reward consisting of 15% of total AURYN emission
     // because they get a share from the secondary reward consisting of 5% of total AURYN emission
     // Hence why the base score and final score are 0
-    fn get_base_user_score(&self) -> BigUint<C::Api> {
+    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
         BigUint::zero()
     }
 

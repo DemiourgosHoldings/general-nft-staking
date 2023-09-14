@@ -126,7 +126,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    fn get_base_user_score(&self) -> BigUint<C::Api>;
+    fn get_base_user_score(&self, module_type: &StakingModuleType) -> BigUint<C::Api>;
     fn get_final_user_score(&self) -> BigUint<C::Api>;
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>);
     fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool;
@@ -139,16 +139,18 @@ where
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
 {
-    fn get_base_user_score(&self) -> BigUint<C::Api> {
+    fn get_base_user_score(&self, module_type: &StakingModuleType) -> BigUint<C::Api> {
         match self {
-            StakingModuleTypeMapping::Invalid(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::CodingDivisionSfts(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::XBunnies(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::Bloodshed(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::Nosferatu(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::VestaXDAO(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::SnakesSfts(module) => module.get_base_user_score(),
-            StakingModuleTypeMapping::All(module) => module.get_base_user_score(),
+            StakingModuleTypeMapping::Invalid(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::CodingDivisionSfts(module) => {
+                module.get_base_user_score(module_type)
+            }
+            StakingModuleTypeMapping::XBunnies(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::Bloodshed(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::Nosferatu(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::VestaXDAO(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::SnakesSfts(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::All(module) => module.get_base_user_score(module_type),
         }
     }
 

@@ -7,7 +7,6 @@ multiversx_sc::imports!();
 
 #[multiversx_sc::module]
 pub trait UserDataStorageModule {
-    // Core storage
     #[view(getStakedNfts)]
     #[storage_mapper("staked_nfts")]
     fn staked_nfts(
@@ -26,7 +25,14 @@ pub trait UserDataStorageModule {
     #[storage_mapper("user_deb")]
     fn user_deb(&self, address: &ManagedAddress) -> SingleValueMapper<BigUint>;
 
-    // primary reward storage
+    #[view(getRawAggregatedUserStakingScore)]
+    #[storage_mapper("raw_aggregated_user_staking_score")]
+    fn raw_aggregated_user_staking_score(
+        &self,
+        staking_module: &StakingModuleType,
+        address: &ManagedAddress,
+    ) -> SingleValueMapper<BigUint>;
+
     #[view(getAggregatedStakingScore)]
     #[storage_mapper("aggregated_staking_score")]
     fn aggregated_staking_score(

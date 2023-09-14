@@ -105,6 +105,9 @@ where
     }
 
     fn update_primary_score(&self) {
+        let new_base_user_score = self
+            .staking_module_impl
+            .get_base_user_score(&StakingModuleType::All);
         let new_pool_user_score = self.staking_module_impl.get_final_user_score();
         if &new_pool_user_score == &self.initial_pool_user_score {
             return;
@@ -122,9 +125,15 @@ where
         self.sc_ref
             .aggregated_staking_score(&StakingModuleType::All)
             .set(new_aggregated_general_score);
+        self.sc_ref
+            .raw_aggregated_user_staking_score(&self.staking_module_type, &self.caller)
+            .set(&new_base_user_score);
     }
 
     fn update_secondary_score(&self) {
+        let new_base_user_score = self
+            .staking_module_impl
+            .get_base_user_score(&self.staking_module_type);
         let new_user_score = self.staking_module_impl.get_final_secondary_score();
         if &new_user_score == &self.secondary_aggregated_user_score_with_deb {
             return;
@@ -140,6 +149,9 @@ where
         self.sc_ref
             .aggregated_staking_score(&self.staking_module_type)
             .set(new_aggregated_general_score);
+        self.sc_ref
+            .raw_aggregated_user_staking_score(&self.staking_module_type, &self.caller)
+            .set(&new_base_user_score);
     }
 
     fn get_score_data(
