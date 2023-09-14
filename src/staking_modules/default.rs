@@ -92,13 +92,10 @@ where
         score
     }
 
-    fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
+    fn add_to_storage(&self, nonce: u64, quantity: BigUint<C::Api>) {
         let mut staked_nfts = self.get_staked_nfts_data();
 
-        staked_nfts.push(NonceQtyPair {
-            nonce: nonce,
-            quantity: amount,
-        });
+        staked_nfts.push(NonceQtyPair { nonce, quantity });
 
         self.sc_ref
             .staked_nfts(&self.impl_token_id)
@@ -111,6 +108,7 @@ where
             .staked_nfts(&payload.token_identifier)
             .remove(&self.user_address)
             .unwrap_or_else(|| ManagedVec::new());
+
         let initial_staked_nfts_count = staked_nfts.len();
 
         let mut remaining_staked_nfts = ManagedVec::new();
