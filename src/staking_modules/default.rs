@@ -44,8 +44,15 @@ where
             .get(&self.user_address)
             .unwrap_or_else(|| ManagedVec::new())
     }
+}
 
-    pub fn get_user_score_temp(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
+impl<'a, C> VestaStakingModule<'a, C> for DefaultStakingModule<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+{
+    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
         let staked_nft_nonces = self.get_staked_nfts_data();
 
         let mut score = BigUint::zero();
@@ -72,17 +79,6 @@ where
         }
 
         score
-    }
-}
-
-impl<'a, C> VestaStakingModule<'a, C> for DefaultStakingModule<'a, C>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::score::ScoreStorageModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-{
-    fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
-        self.get_user_score_temp(staking_module_type)
     }
 
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {

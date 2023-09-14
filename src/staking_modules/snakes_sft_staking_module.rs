@@ -59,7 +59,7 @@ where
             return BigUint::zero();
         }
 
-        self.default_impl.get_user_score_temp(staking_module_type)
+        self.default_impl.get_base_user_score(staking_module_type)
     }
 
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
