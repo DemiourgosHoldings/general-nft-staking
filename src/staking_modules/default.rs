@@ -120,9 +120,7 @@ where
         }
 
         let remaining_staked_nfts_count = remaining_staked_nfts.len();
-        self.sc_ref
-            .staked_nfts(&payload.token_identifier)
-            .insert(self.user_address.clone(), remaining_staked_nfts);
+        self.staked_assets = remaining_staked_nfts;
 
         initial_staked_nfts_count != remaining_staked_nfts_count
     }
