@@ -102,6 +102,7 @@ where
     }
 
     fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        self.default_impl.get_final_secondary_score()
+        self.default_impl
+            .get_user_score_temp(&StakingModuleType::SnakesSfts)
     }
 }
