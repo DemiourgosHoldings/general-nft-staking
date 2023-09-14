@@ -85,7 +85,7 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
-        self.get_user_score_temp(&StakingModuleType::All)
+        self.get_user_score_temp(staking_module_type)
     }
 
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
@@ -137,9 +137,5 @@ where
             .insert(self.user_address.clone(), remaining_staked_nfts);
 
         initial_staked_nfts_count != remaining_staked_nfts_count
-    }
-
-    fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        self.get_user_score_temp(&self.module_type)
     }
 }

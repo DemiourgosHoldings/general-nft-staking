@@ -58,7 +58,7 @@ where
             &user_deb,
         );
 
-        let secondary_initial_pool_user_score = staking_module_impl.get_final_secondary_score();
+        let secondary_initial_pool_user_score = staking_module_impl.get_base_user_score(&staking_module_type);
 
         Self {
             sc_ref,
@@ -140,10 +140,7 @@ where
         aggregated_user_score_with_deb: &BigUint<C::Api>,
         aggregated_general_score: &BigUint<C::Api>,
     ) {
-        let new_base_user_score = match module_type == &StakingModuleType::All {
-            true => self.staking_module_impl.get_base_user_score(module_type),
-            false => self.staking_module_impl.get_final_secondary_score(),
-        };
+        let new_base_user_score = self.staking_module_impl.get_base_user_score(module_type);
 
         let new_pool_user_score = match module_type == &StakingModuleType::All {
             true => Self::apply_deb(&new_base_user_score, &self.user_deb),

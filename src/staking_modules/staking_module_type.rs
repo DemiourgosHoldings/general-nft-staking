@@ -129,7 +129,6 @@ where
     fn get_base_user_score(&self, module_type: &StakingModuleType) -> BigUint<C::Api>;
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>);
     fn start_unbonding(&self, payload: StartUnbondingPayload<C::Api>) -> bool;
-    fn get_final_secondary_score(&self) -> BigUint<C::Api>;
 }
 
 impl<'a, C> VestaStakingModule<'a, C> for StakingModuleTypeMapping<'a, C>
@@ -178,21 +177,6 @@ where
             StakingModuleTypeMapping::VestaXDAO(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::SnakesSfts(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::All(module) => module.start_unbonding(payload),
-        }
-    }
-
-    fn get_final_secondary_score(&self) -> BigUint<<C>::Api> {
-        match self {
-            StakingModuleTypeMapping::Invalid(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::CodingDivisionSfts(module) => {
-                module.get_final_secondary_score()
-            }
-            StakingModuleTypeMapping::XBunnies(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::Bloodshed(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::Nosferatu(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::VestaXDAO(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::SnakesSfts(module) => module.get_final_secondary_score(),
-            StakingModuleTypeMapping::All(module) => module.get_final_secondary_score(),
         }
     }
 }
