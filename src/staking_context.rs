@@ -19,10 +19,8 @@ where
     caller: ManagedAddress<C::Api>,
     user_deb: BigUint<C::Api>,
     aggregated_general_score: BigUint<C::Api>,
-    aggregated_user_score: BigUint<C::Api>,
     aggregated_user_score_with_deb: BigUint<C::Api>,
     secondary_aggregated_general_score: BigUint<C::Api>,
-    secondary_aggregated_user_score: BigUint<C::Api>,
     secondary_aggregated_user_score_with_deb: BigUint<C::Api>,
     initial_pool_user_score: BigUint<C::Api>,
     secondary_initial_pool_user_score: BigUint<C::Api>,
@@ -40,13 +38,10 @@ where
         let caller = sc_ref.blockchain().get_caller();
         let staking_module_type = sc_ref.stake_pool_type_configuration(payment_token_id).get();
 
-        let (aggregated_general_score, aggregated_user_score, aggregated_user_score_with_deb) =
+        let (aggregated_general_score, aggregated_user_score_with_deb) =
             Self::get_score_data(&sc_ref, &StakingModuleType::All, &caller);
-        let (
-            secondary_aggregated_general_score,
-            secondary_aggregated_user_score,
-            secondary_aggregated_user_score_with_deb,
-        ) = Self::get_score_data(&sc_ref, &staking_module_type, &caller);
+        let (secondary_aggregated_general_score, secondary_aggregated_user_score_with_deb) =
+            Self::get_score_data(&sc_ref, &staking_module_type, &caller);
 
         let staking_module_impl =
             staking_module_type.get_module(sc_ref, payment_token_id.clone(), caller.clone());
@@ -65,10 +60,8 @@ where
             caller,
             user_deb,
             aggregated_general_score,
-            aggregated_user_score,
             aggregated_user_score_with_deb,
             secondary_aggregated_general_score,
-            secondary_aggregated_user_score,
             secondary_aggregated_user_score_with_deb,
             initial_pool_user_score,
             secondary_initial_pool_user_score,
@@ -171,9 +164,9 @@ where
         sc_ref: &'a C,
         staking_module_type: &StakingModuleType,
         caller: &ManagedAddress<C::Api>,
-    ) -> (BigUint<C::Api>, BigUint<C::Api>, BigUint<C::Api>) {
+    ) -> (BigUint<C::Api>, BigUint<C::Api>) {
         let aggregated_general_score = sc_ref.aggregated_staking_score(staking_module_type).get();
-        let aggregated_user_score = match sc_ref
+        let aggregated_user_score_with_deb = match sc_ref
             .aggregated_user_staking_score(staking_module_type, caller)
             .is_empty()
         {
@@ -182,13 +175,8 @@ where
                 .aggregated_user_staking_score(staking_module_type, caller)
                 .get(),
         };
-        let aggregated_user_score_with_deb = aggregated_user_score.clone();
 
-        (
-            aggregated_general_score,
-            aggregated_user_score,
-            aggregated_user_score_with_deb,
-        )
+        (aggregated_general_score, aggregated_user_score_with_deb)
     }
 
     fn apply_deb(user_score: &BigUint<C::Api>, deb: &BigUint<C::Api>) -> BigUint<C::Api> {
