@@ -109,28 +109,44 @@ where
     }
 
     fn update_primary_score(&self) {
-        let new_base_user_score = self
-            .staking_module_impl
-            .get_base_user_score(&StakingModuleType::All);
-        let new_pool_user_score = Self::apply_deb(&new_base_user_score, &self.user_deb);
-        if &new_pool_user_score == &self.initial_pool_user_score {
+        self.update_score(
+            &StakingModuleType::All,
+            &self.initial_pool_user_score,
+            &self.aggregated_general_score,
+            &self.aggregated_user_score_with_deb,
+        );
+    }
+
+    fn update_score(
+        &self,
+        module_type: &StakingModuleType,
+        initial_pool_user_score: &BigUint<C::Api>,
+        aggregated_user_score_with_deb: &BigUint<C::Api>,
+        aggregated_general_score: &BigUint<C::Api>,
+    ) {
+        let new_base_user_score = self.staking_module_impl.get_base_user_score(module_type);
+        let new_pool_user_score = match module_type == &StakingModuleType::All {
+            true => Self::apply_deb(&new_base_user_score, &self.user_deb),
+            false => new_base_user_score.clone(),
+        };
+        if &new_pool_user_score == initial_pool_user_score {
             return;
         }
 
         let new_aggregated_general_score =
-            &self.aggregated_general_score + &new_pool_user_score - &self.initial_pool_user_score;
+            aggregated_general_score + &new_pool_user_score - initial_pool_user_score;
 
-        let new_user_score = &self.aggregated_user_score_with_deb + &new_pool_user_score
-            - &self.initial_pool_user_score;
+        let new_user_score =
+            aggregated_user_score_with_deb + &new_pool_user_score - initial_pool_user_score;
 
         self.sc_ref
-            .aggregated_user_staking_score(&StakingModuleType::All, &self.caller)
+            .aggregated_user_staking_score(module_type, &self.caller)
             .set(new_user_score);
         self.sc_ref
-            .aggregated_staking_score(&StakingModuleType::All)
+            .aggregated_staking_score(module_type)
             .set(new_aggregated_general_score);
         self.sc_ref
-            .raw_aggregated_user_staking_score(&self.staking_module_type, &self.caller)
+            .raw_aggregated_user_staking_score(module_type, &self.caller)
             .set(&new_base_user_score);
     }
 
