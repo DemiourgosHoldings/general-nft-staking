@@ -5,7 +5,10 @@ use staking_context::StakingContext;
 use types::start_unbonding_payload::StartUnbondingPayload;
 use utils::get_all_pending_rewards;
 
-use crate::{constants::ERR_NOTHING_TO_CLAIM, utils::claim_all_pending_rewards};
+use crate::{
+    constants::{ERR_INVALID_STAKED_TOKEN_ID, ERR_NOTHING_TO_CLAIM},
+    utils::claim_all_pending_rewards,
+};
 
 multiversx_sc::imports!();
 
@@ -101,6 +104,14 @@ pub trait NftStakingContract:
                 .contains_key(&self.blockchain().get_caller())
                 && !payload.is_empty(),
             ERR_FAILED_UNBONDING
+        );
+    }
+
+    fn require_stake_token_identifier_can_be_staked(&self, token_identifier: &TokenIdentifier) {
+        require!(
+            self.eligible_stake_token_identifiers()
+                .contains(token_identifier),
+            ERR_INVALID_STAKED_TOKEN_ID
         );
     }
 }

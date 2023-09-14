@@ -10,3 +10,4 @@ pub const ERR_NOTHING_TO_CLAIM: &str = "Nothing to claim";
 pub const ERR_REWARD_ALREADY_DISTRIBUTED: &str = "Reward already distributed";
 pub const ERR_INVALID_REWARD_TOKEN_ID: &str = "Invalid reward token id";
 pub const ERR_COLLECTION_ALREADY_REGISTERED: &str = "Collection already registered";
+pub const ERR_INVALID_STAKED_TOKEN_ID: &str = "Invalid token identifier";
