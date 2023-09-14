@@ -1,11 +1,8 @@
 use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier};
 
-use crate::{
-    constants::DEB_DENOMINATION,
-    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
-};
+use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
 
-use super::staking_module_type::{self, StakingModuleType, VestaStakingModule};
+use super::staking_module_type::{StakingModuleType, VestaStakingModule};
 
 pub struct DefaultStakingModule<'a, C>
 where

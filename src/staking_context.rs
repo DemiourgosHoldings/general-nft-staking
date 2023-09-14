@@ -1,8 +1,7 @@
 use crate::{
     constants::DEB_DENOMINATION,
     staking_modules::staking_module_type::{
-        self, StakingModuleType, StakingModuleTypeFactory, StakingModuleTypeMapping,
-        VestaStakingModule,
+        StakingModuleType, StakingModuleTypeFactory, StakingModuleTypeMapping, VestaStakingModule,
     },
     types::start_unbonding_payload::StartUnbondingPayload,
     utils::secure_rewards,
@@ -58,7 +57,8 @@ where
             &user_deb,
         );
 
-        let secondary_initial_pool_user_score = staking_module_impl.get_base_user_score(&staking_module_type);
+        let secondary_initial_pool_user_score =
+            staking_module_impl.get_base_user_score(&staking_module_type);
 
         Self {
             sc_ref,

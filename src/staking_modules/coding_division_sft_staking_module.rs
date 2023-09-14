@@ -5,7 +5,7 @@ use super::{
     staking_module_type::{StakingModuleType, VestaStakingModule},
 };
 use crate::{
-    constants::{DEB_DENOMINATION, VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE},
+    constants::VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE,
     types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
 };
 
