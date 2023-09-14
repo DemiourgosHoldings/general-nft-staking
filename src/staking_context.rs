@@ -1,4 +1,5 @@
 use crate::{
+    constants::DEB_DENOMINATION,
     staking_modules::staking_module_type::{
         self, StakingModuleType, StakingModuleTypeFactory, StakingModuleTypeMapping,
         VestaStakingModule,
@@ -17,6 +18,7 @@ where
 {
     sc_ref: &'a C,
     caller: ManagedAddress<C::Api>,
+    user_deb: BigUint<C::Api>,
     aggregated_general_score: BigUint<C::Api>,
     aggregated_user_score: BigUint<C::Api>,
     aggregated_user_score_with_deb: BigUint<C::Api>,
@@ -50,10 +52,12 @@ where
             staking_module_type.get_module(sc_ref, payment_token_id.clone(), caller.clone());
 
         let initial_pool_user_score = staking_module_impl.get_final_user_score();
+        let user_deb = sc_ref.user_deb(&caller).get();
 
         Self {
             sc_ref,
             caller,
+            user_deb,
             aggregated_general_score,
             aggregated_user_score,
             aggregated_user_score_with_deb,
@@ -108,7 +112,7 @@ where
         let new_base_user_score = self
             .staking_module_impl
             .get_base_user_score(&StakingModuleType::All);
-        let new_pool_user_score = self.staking_module_impl.get_final_user_score();
+        let new_pool_user_score = Self::apply_deb(&new_base_user_score, &self.user_deb);
         if &new_pool_user_score == &self.initial_pool_user_score {
             return;
         }
@@ -176,5 +180,15 @@ where
             aggregated_user_score,
             aggregated_user_score_with_deb,
         )
+    }
+
+    fn apply_deb(user_score: &BigUint<C::Api>, deb: &BigUint<C::Api>) -> BigUint<C::Api> {
+        let deb_denomination = BigUint::from(DEB_DENOMINATION);
+
+        if deb <= &deb_denomination {
+            return user_score.clone();
+        }
+
+        user_score * deb / deb_denomination
     }
 }
