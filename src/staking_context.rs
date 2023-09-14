@@ -52,9 +52,13 @@ where
         let staking_module_impl =
             staking_module_type.get_module(sc_ref, payment_token_id.clone(), caller.clone());
 
-        let initial_pool_user_score = staking_module_impl.get_final_user_score();
-        let secondary_initial_pool_user_score = staking_module_impl.get_final_secondary_score();
         let user_deb = sc_ref.user_deb(&caller).get();
+        let initial_pool_user_score = Self::apply_deb(
+            &staking_module_impl.get_base_user_score(&StakingModuleType::All),
+            &user_deb,
+        );
+
+        let secondary_initial_pool_user_score = staking_module_impl.get_final_secondary_score();
 
         Self {
             sc_ref,

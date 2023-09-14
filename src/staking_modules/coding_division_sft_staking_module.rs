@@ -101,18 +101,6 @@ where
         self.apply_full_set_bonus(default_base_score)
     }
 
-    fn get_final_user_score(&self) -> BigUint<C::Api> {
-        let base_score = self.get_base_user_score(&self.default_impl.module_type);
-        let deb_denomination = BigUint::from(DEB_DENOMINATION);
-
-        let user_deb = match self.sc_ref.user_deb(&self.user_address).is_empty() {
-            false => self.sc_ref.user_deb(&self.user_address).get(),
-            true => deb_denomination.clone(),
-        };
-
-        &base_score * &user_deb / deb_denomination
-    }
-
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
         let mut staked_nfts = self.default_impl.get_staked_nfts_data();
 

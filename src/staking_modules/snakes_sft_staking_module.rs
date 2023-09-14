@@ -62,10 +62,6 @@ where
         self.default_impl.get_user_score_temp(staking_module_type)
     }
 
-    fn get_final_user_score(&self) -> BigUint<C::Api> {
-        BigUint::zero()
-    }
-
     fn add_to_storage(&self, nonce: u64, amount: BigUint<C::Api>) {
         let mut staked_nfts = self
             .sc_ref

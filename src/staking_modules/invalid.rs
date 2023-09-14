@@ -26,10 +26,6 @@ where
         BigUint::zero()
     }
 
-    fn get_final_user_score(&self) -> BigUint<C::Api> {
-        BigUint::zero()
-    }
-
     fn add_to_storage(&self, _nonce: u64, _amount: BigUint<C::Api>) {}
 
     fn start_unbonding(
