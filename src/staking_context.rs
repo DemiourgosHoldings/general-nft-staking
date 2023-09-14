@@ -26,6 +26,7 @@ where
     secondary_aggregated_user_score: BigUint<C::Api>,
     secondary_aggregated_user_score_with_deb: BigUint<C::Api>,
     initial_pool_user_score: BigUint<C::Api>,
+    secondary_initial_pool_user_score: BigUint<C::Api>,
     staking_module_type: StakingModuleType,
     staking_module_impl: StakingModuleTypeMapping<'a, C>,
 }
@@ -52,6 +53,7 @@ where
             staking_module_type.get_module(sc_ref, payment_token_id.clone(), caller.clone());
 
         let initial_pool_user_score = staking_module_impl.get_final_user_score();
+        let secondary_initial_pool_user_score = staking_module_impl.get_final_secondary_score();
         let user_deb = sc_ref.user_deb(&caller).get();
 
         Self {
@@ -65,6 +67,7 @@ where
             secondary_aggregated_user_score,
             secondary_aggregated_user_score_with_deb,
             initial_pool_user_score,
+            secondary_initial_pool_user_score,
             staking_module_type,
             staking_module_impl,
         }
@@ -112,8 +115,17 @@ where
         self.update_score(
             &StakingModuleType::All,
             &self.initial_pool_user_score,
-            &self.aggregated_general_score,
             &self.aggregated_user_score_with_deb,
+            &self.aggregated_general_score,
+        );
+    }
+
+    fn update_secondary_score(&self) {
+        self.update_score(
+            &self.staking_module_type,
+            &self.secondary_initial_pool_user_score,
+            &self.secondary_aggregated_user_score_with_deb,
+            &self.secondary_aggregated_general_score,
         );
     }
 
@@ -124,7 +136,11 @@ where
         aggregated_user_score_with_deb: &BigUint<C::Api>,
         aggregated_general_score: &BigUint<C::Api>,
     ) {
-        let new_base_user_score = self.staking_module_impl.get_base_user_score(module_type);
+        let new_base_user_score = match module_type == &StakingModuleType::All {
+            true => self.staking_module_impl.get_base_user_score(module_type),
+            false => self.staking_module_impl.get_final_secondary_score(),
+        };
+
         let new_pool_user_score = match module_type == &StakingModuleType::All {
             true => Self::apply_deb(&new_base_user_score, &self.user_deb),
             false => new_base_user_score.clone(),
@@ -147,30 +163,6 @@ where
             .set(new_aggregated_general_score);
         self.sc_ref
             .raw_aggregated_user_staking_score(module_type, &self.caller)
-            .set(&new_base_user_score);
-    }
-
-    fn update_secondary_score(&self) {
-        let new_base_user_score = self
-            .staking_module_impl
-            .get_base_user_score(&self.staking_module_type);
-        let new_user_score = self.staking_module_impl.get_final_secondary_score();
-        if &new_user_score == &self.secondary_aggregated_user_score_with_deb {
-            return;
-        }
-
-        let new_aggregated_general_score = &self.secondary_aggregated_general_score
-            - &self.secondary_aggregated_user_score_with_deb
-            + &new_user_score;
-
-        self.sc_ref
-            .aggregated_user_staking_score(&self.staking_module_type, &self.caller)
-            .set(new_user_score);
-        self.sc_ref
-            .aggregated_staking_score(&self.staking_module_type)
-            .set(new_aggregated_general_score);
-        self.sc_ref
-            .raw_aggregated_user_staking_score(&self.staking_module_type, &self.caller)
             .set(&new_base_user_score);
     }
 
