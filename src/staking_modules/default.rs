@@ -14,6 +14,7 @@ where
     impl_token_id: TokenIdentifier<C::Api>,
     user_address: ManagedAddress<C::Api>,
     pub module_type: StakingModuleType,
+    pub staked_assets: ManagedVec<C::Api, NonceQtyPair<C::Api>>,
 }
 
 impl<'a, C> DefaultStakingModule<'a, C>
@@ -28,20 +29,30 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
+        let staked_assets = Self::get_staked_assets(sc_ref, &impl_token_id, &user_address);
         Self {
             sc_ref,
             impl_token_id,
             user_address,
             module_type,
+            staked_assets,
         }
     }
 
     //TODO: add a struct field and store this data there instead of reading from storage everytime
     //TODO: add a default DROP fn that stores the changes in this struct field to storage
     pub fn get_staked_nfts_data(&self) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
-        self.sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .get(&self.user_address)
+        Self::get_staked_assets(&self.sc_ref, &self.impl_token_id, &self.user_address)
+    }
+
+    fn get_staked_assets(
+        sc_ref: &'a C,
+        impl_token_id: &TokenIdentifier<C::Api>,
+        user_address: &ManagedAddress<C::Api>,
+    ) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
+        sc_ref
+            .staked_nfts(&impl_token_id)
+            .get(&user_address)
             .unwrap_or_else(|| ManagedVec::new())
     }
 }
