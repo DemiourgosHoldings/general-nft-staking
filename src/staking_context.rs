@@ -71,33 +71,28 @@ where
     }
 
     pub fn add_to_stake(&mut self, payments: &ManagedVec<C::Api, EsdtTokenPayment<C::Api>>) {
-        self.secure_rewards();
+        self.secure_all_rewards();
 
         for payment in payments.iter() {
             self.staking_module_impl
                 .add_to_storage(payment.token_nonce, payment.amount);
         }
-
-        self.update_primary_score();
-        self.update_secondary_score();
     }
 
     pub fn start_unbonding(&mut self, payload: StartUnbondingPayload<C::Api>) -> bool {
-        self.secure_rewards();
+        self.secure_all_rewards();
 
         let unbonding_result = self.staking_module_impl.start_unbonding(payload.clone());
         if unbonding_result {
             self.sc_ref
                 .unbonding_assets(&self.caller)
                 .insert(self.sc_ref.blockchain().get_block_timestamp(), payload);
-            self.update_primary_score();
-            self.update_secondary_score();
         }
 
         unbonding_result
     }
 
-    fn secure_rewards(&self) {
+    fn secure_all_rewards(&self) {
         for reward_token_id in self.sc_ref.reward_token_identifiers().iter() {
             secure_rewards(
                 self.sc_ref,
@@ -187,5 +182,17 @@ where
         }
 
         user_score * deb / deb_denomination
+    }
+}
+
+impl<'a, C> Drop for StakingContext<'a, C>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::score::ScoreStorageModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+{
+    fn drop(&mut self) {
+        self.update_primary_score();
+        self.update_secondary_score();
     }
 }
