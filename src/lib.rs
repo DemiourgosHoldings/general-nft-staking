@@ -31,6 +31,8 @@ pub trait NftStakingContract:
     fn init(&self, primary_reward_token_identifier: TokenIdentifier) {
         self.unbonding_time_penalty()
             .set_if_empty(&DEFAULT_UNBONDING_TIME_PENALTY);
+        self.primary_reward_token_identifier()
+            .set_if_empty(&primary_reward_token_identifier);
         self.reward_token_identifiers()
             .insert(primary_reward_token_identifier);
     }

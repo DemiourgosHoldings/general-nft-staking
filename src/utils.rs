@@ -166,23 +166,3 @@ where
 
     pending_rewards
 }
-
-pub fn apply_new_deb<C>(
-    old_general_aggregated_score: &BigUint<C::Api>,
-    old_user_score: &BigUint<C::Api>,
-    old_deb: &BigUint<C::Api>,
-    new_deb: &BigUint<C::Api>,
-    deb_denomination: &BigUint<C::Api>,
-) -> (BigUint<C::Api>, BigUint<C::Api>)
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-    C: crate::storage::score::ScoreStorageModule,
-{
-    let score_without_deb = &(old_user_score * deb_denomination) / old_deb;
-    let new_user_score = &(score_without_deb * new_deb) / deb_denomination;
-    let new_general_aggregated_score =
-        old_general_aggregated_score - old_user_score + &new_user_score;
-
-    (new_user_score, new_general_aggregated_score)
-}

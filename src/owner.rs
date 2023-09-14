@@ -4,7 +4,7 @@ use crate::{
         ERR_REWARD_ALREADY_DISTRIBUTED,
     },
     staking_modules::staking_module_type::StakingModuleType,
-    utils::{apply_new_deb, secure_rewards},
+    utils::secure_rewards,
 };
 
 multiversx_sc::imports!();
@@ -39,55 +39,40 @@ pub trait OwnerModule:
     #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
-        let deb_denomination = BigUint::from(DEB_DENOMINATION);
-        let mut old_deb = self.user_deb(&user_address).get();
-        if &old_deb < &deb_denomination {
-            old_deb = deb_denomination.clone();
-        }
-
-        for reward_token_id in self.reward_token_identifiers().iter() {
-            for staking_module_type in self
-                .reward_token_to_staking_module_map(&reward_token_id)
-                .iter()
-            {
-                secure_rewards(self, &user_address, &reward_token_id, &staking_module_type);
-
-                self.update_score_handler(
-                    &staking_module_type,
-                    &user_address,
-                    &new_deb,
-                    &old_deb,
-                    &deb_denomination,
-                );
-            }
-        }
-    }
-
-    fn update_score_handler(
-        &self,
-        staking_module_type: &StakingModuleType,
-        user_address: &ManagedAddress,
-        new_deb: &BigUint,
-        old_deb: &BigUint,
-        deb_denomination: &BigUint,
-    ) {
-        let old_user_score = self
-            .aggregated_user_staking_score(staking_module_type, user_address)
-            .get();
-        let old_general_aggregated_score = self.aggregated_staking_score(staking_module_type).get();
-
-        let (new_user_score, new_general_aggregated_score) = apply_new_deb::<Self>(
-            &old_general_aggregated_score,
-            &old_user_score,
-            old_deb,
-            new_deb,
-            deb_denomination,
+        secure_rewards(
+            self,
+            &user_address,
+            &self.primary_reward_token_identifier().get(),
+            &StakingModuleType::All,
         );
 
-        self.aggregated_user_staking_score(staking_module_type, user_address)
-            .set(new_user_score);
-        self.aggregated_staking_score(staking_module_type)
-            .set(&new_general_aggregated_score);
+        self.update_score_handler(&user_address, &new_deb);
+    }
+
+    fn update_score_handler(&self, user_address: &ManagedAddress, new_deb_input: &BigUint) {
+        let deb_denomination = BigUint::from(DEB_DENOMINATION);
+        let old_deb = self.user_deb(&user_address).get();
+        if &old_deb == new_deb_input {
+            return;
+        }
+        let new_deb = match new_deb_input < &deb_denomination {
+            true => deb_denomination.clone(),
+            false => new_deb_input.clone(),
+        };
+
+        let current_score = self
+            .raw_aggregated_user_staking_score(&StakingModuleType::All, &user_address)
+            .get();
+        let current_score_with_deb = self
+            .aggregated_user_staking_score(&StakingModuleType::All, &user_address)
+            .get();
+        let current_general_score = self.aggregated_staking_score(&StakingModuleType::All).get();
+        let new_score_after_deb = &current_score * &new_deb / &deb_denomination;
+
+        self.aggregated_user_staking_score(&StakingModuleType::All, &user_address)
+            .set(&new_score_after_deb);
+        self.aggregated_staking_score(&StakingModuleType::All)
+            .set(&current_general_score - &current_score_with_deb + &new_score_after_deb);
     }
 
     fn distribute_reward_handler(
