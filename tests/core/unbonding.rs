@@ -233,7 +233,7 @@ fn unbond_multiple_sft_nonces_includes_quantity() {
 
     setup.assert_user_score(
         StakingModuleType::CodingDivisionSfts,
-        amount_to_stake * score_per_unit as u64,
+        3 * amount_to_stake * score_per_unit as u64,
     );
 
     setup.start_unbonding(
