@@ -32,12 +32,8 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        let default_impl = DefaultStakingModule::new(
-            sc_ref,
-            impl_token_id.clone(),
-            user_address,
-            module_type,
-        );
+        let default_impl =
+            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address, module_type);
         Self {
             sc_ref,
             impl_token_id,
@@ -46,12 +42,14 @@ where
     }
 
     fn count_full_sets(&self) -> BigUint<C::Api> {
-        let staked_nft_nonces = self.default_impl.get_staked_nfts_data();
-
         let mut full_sets = BigUint::from(100_000u32);
 
         for set_nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
-            let item = staked_nft_nonces.iter().find(|p| p.nonce == set_nonce);
+            let item = self
+                .default_impl
+                .staked_assets
+                .iter()
+                .find(|p| p.nonce == set_nonce);
             if item.is_none() {
                 return BigUint::zero();
             }
