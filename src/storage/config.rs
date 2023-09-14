@@ -24,4 +24,8 @@ pub trait ConfigModule {
     #[view(getRewardTokenIdentifiers)]
     #[storage_mapper("reward_token_identifiers")]
     fn reward_token_identifiers(&self) -> UnorderedSetMapper<TokenIdentifier>;
+
+    #[view(getEligibleStakeTokenIdentifiers)]
+    #[storage_mapper("eligible_stake_token_identifiers")]
+    fn eligible_stake_token_identifiers(&self) -> UnorderedSetMapper<TokenIdentifier>;
 }

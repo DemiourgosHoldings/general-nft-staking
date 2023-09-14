@@ -9,3 +9,4 @@ pub const ERR_ONE_TOKEN_ID_SUPPORTED: &str = "Only one token id is allowed per T
 pub const ERR_NOTHING_TO_CLAIM: &str = "Nothing to claim";
 pub const ERR_REWARD_ALREADY_DISTRIBUTED: &str = "Reward already distributed";
 pub const ERR_INVALID_REWARD_TOKEN_ID: &str = "Invalid reward token id";
+pub const ERR_COLLECTION_ALREADY_REGISTERED: &str = "Collection already registered";

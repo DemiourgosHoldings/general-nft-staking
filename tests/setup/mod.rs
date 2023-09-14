@@ -206,10 +206,7 @@ where
                 &self.contract_wrapper,
                 &rust_biguint!(0),
                 |sc| {
-                    sc.stake_pool_type_configuration(&managed_token_id!(token_id))
-                        .set(&pool_type);
-                    sc.reward_token_to_staking_module_map(&managed_token_id!(REWARD_TOKEN_ID))
-                        .insert(pool_type);
+                    sc.register_new_staking_pool(managed_token_id!(token_id), pool_type);
                 },
             )
             .assert_ok();

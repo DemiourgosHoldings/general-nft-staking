@@ -1,5 +1,8 @@
 use crate::{
-    constants::{DEB_DENOMINATION, ERR_INVALID_REWARD_TOKEN_ID, ERR_REWARD_ALREADY_DISTRIBUTED},
+    constants::{
+        DEB_DENOMINATION, ERR_COLLECTION_ALREADY_REGISTERED, ERR_INVALID_REWARD_TOKEN_ID,
+        ERR_REWARD_ALREADY_DISTRIBUTED,
+    },
     staking_modules::staking_module_type::StakingModuleType,
     utils::{apply_new_deb, secure_rewards},
 };
@@ -143,6 +146,11 @@ pub trait OwnerModule:
     ) {
         self.stake_pool_type_configuration(&collection_token_identifier)
             .set(staking_module_type);
+        require!(
+            self.eligible_stake_token_identifiers()
+                .insert(collection_token_identifier),
+            ERR_COLLECTION_ALREADY_REGISTERED
+        );
     }
 
     #[only_owner]
