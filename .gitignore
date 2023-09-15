@@ -7,3 +7,6 @@
 /output*/
 
 .vscode/
+
+# scripts node_module
+*/node_modules/

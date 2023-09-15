@@ -1,4 +1,4 @@
-pub const DEB_DENOMINATION: u64 = 10_000;
+pub const DEB_DENOMINATION: u64 = 100_000;
 pub const VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE: u64 = 10;
 
 pub const DEFAULT_UNBONDING_TIME_PENALTY: u64 = 3 * 24 * 3600; // three days
