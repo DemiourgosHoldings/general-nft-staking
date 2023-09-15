@@ -182,15 +182,115 @@ Similar configuration to XBunnies and Bloodshed NFTs, details in [the GitBook](h
 
 NOT CONFIGURED YET - awaiting confirmation
 
-
-# Other configuration possibilities 
+# Other configuration possibilities
 
 The whole logic can be used however and can support multiple scenarios that have not been defined here.
 
 The logic breakdown is that one can configure:
+
 - what algorithm should be used for computing the scores
 - what reward is a staked NFT/SFT collection eligible for
 - what share of the distributed reward each collection is eligible for
 - different reward tokens for secondary reward distribution
 - same/multiple token(s) for each/some/all staking pools
 - and more..
+
+# Scripts usage
+
+## One time setup
+
+- Open a terminal and go to the scripts folder
+- Run `npm i`
+- Create the `.env` file (you can copy paste the `.env.default` file, rename it and fill it with correct info) and update it accordingly
+
+## Script
+
+Running `node index.js` should present a set of options, such as:
+
+```
+Please choose an option:
+ 1. Deploy
+ 2. Upgrade
+ 3. Add Pool
+```
+
+Each of these options are being automatically configured based on the `.env` file.
+
+Each deployment will override the `config.json` entry of the target `.env ENVIRONMENT` variable.
+
+Each upgrade will look for the pre-existing address in `config.json` based on the target `ENVIRONMENT` variable.
+
+### Deploy
+
+Deploys a new instance of the contract using the PEM file and `ENVIRONMENT` settings provided in `.env`. Will store the new address in `config.json` upon successful execution.
+
+### Upgrade
+
+Upgrades an existing instance of the contract using the same procedure explained above.
+
+### Commit Pools Data
+
+Will look in the `config.json` for uncomitted pools. Once a pool has been setup, it will be market as committed and ignored for further updates. If a pool must be updated, remove the "isCommitted" property and run the script again.
+
+#### Pool Settings that must be provided:
+
+- `name`: Ignored by the script, useful for keeping track of which pool does what
+- `collectionTokenIdentifier`: The NFT/SFT collection token identifier of the pool
+- `stakingModuleType`: One of the following values
+  - CodingDivisionSfts
+  - XBunnies
+  - Bloodshed
+  - Nosferatu
+  - VestaXDAO
+  - SnakesSfts
+- `scoreConfiguration`: the scores based on which the reward is being distributed. Example of configuration:
+
+```json
+{
+    ...
+    "scoreConfiguration": {
+          "All": {
+            "base": 10,
+            "granular": []
+          },
+          "XBunnies": {
+            "base": 5,
+            "granular": [
+                {
+                    "nonces": [10, 11, 12],
+                    "score": 10
+                },
+                {
+                    "nonces": [210, 211, 212],
+                    "score": 15
+                },
+                {
+                    "nonces": [310, 311, 312, 313],
+                    "score": 20
+                },
+            ]
+          }
+        }
+    ...
+}
+```
+
+#### Reward tokens
+
+Each reward token must be registered as a pool reward if it's going to be distributed to a specific pool.
+These tokens can be set under `"poolSettings[ENVIRONMENT][rewardTokens]"` as key-value pairs. Example:
+
+```json
+{
+  ...
+  "rewardTokens": [
+    {
+      "tokenIdentifier": "REWARDTKN-123456",
+      "stakingModuleType": "XBunnies"
+    }
+  ]
+  ...
+}
+```
+
+The same `"isCommitted"` logic is applied here as well.
