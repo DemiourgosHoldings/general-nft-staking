@@ -80,24 +80,22 @@ where
         let mut shares_score = BigUint::<C::Api>::zero();
 
         for staked_nft_info in self.default_impl.staked_assets.iter() {
-            if staked_nft_info.nonce == 2 {
-                continue;
+            if staked_nft_info.nonce == 1 {
+                let asset_nonce_score = self.sc_ref.nonce_asset_score(
+                    &self.impl_token_id,
+                    staked_nft_info.nonce,
+                    staking_module_type,
+                );
+
+                let unit_score;
+                if !asset_nonce_score.is_empty() {
+                    unit_score = BigUint::from(asset_nonce_score.get());
+                } else {
+                    unit_score = base_score.clone();
+                }
+
+                snakes_score += &unit_score * &staked_nft_info.quantity;
             }
-
-            let asset_nonce_score = self.sc_ref.nonce_asset_score(
-                &self.impl_token_id,
-                staked_nft_info.nonce,
-                staking_module_type,
-            );
-
-            let unit_score;
-            if !asset_nonce_score.is_empty() {
-                unit_score = BigUint::from(asset_nonce_score.get());
-            } else {
-                unit_score = base_score.clone();
-            }
-
-            snakes_score += &unit_score * &staked_nft_info.quantity;
 
             let nonce_shares_score = self
                 .sc_ref
@@ -155,13 +153,17 @@ where
         if &self.initial_user_shares_score == new_user_score {
             return;
         }
-        let new_aggregated_score = &self.initial_general_shares_score - new_user_score;
+        let new_aggregated_score =
+            &self.initial_general_shares_score - &self.initial_user_shares_score + new_user_score;
 
         self.sc_ref
             .aggregated_staking_score(&StakingModuleType::SharesSfts)
             .set(&new_aggregated_score);
         self.sc_ref
             .raw_aggregated_user_staking_score(&StakingModuleType::SharesSfts, &self.user_address)
+            .set(new_user_score);
+        self.sc_ref
+            .aggregated_user_staking_score(&StakingModuleType::SharesSfts, &self.user_address)
             .set(new_user_score);
     }
 }

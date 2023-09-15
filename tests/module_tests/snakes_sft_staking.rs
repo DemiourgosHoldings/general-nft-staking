@@ -23,3 +23,72 @@ fn realistic_take_1() {
     setup.assert_user_score(StakingModuleType::All, 0);
     setup.assert_user_score(StakingModuleType::SnakesSfts, snake_sfts_to_stake);
 }
+
+#[test]
+fn staking_shares_only_updates_share_score() {
+    let snake_sfts_to_stake = 10;
+    let share_score = 5;
+    let expected_shares_score = snake_sfts_to_stake * share_score as u64;
+
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
+    setup.set_token_nonce_score(StakingModuleType::SnakesSfts, POOL2_TOKEN_ID, 1, 1);
+    setup.set_token_nonce_score(
+        StakingModuleType::SharesSfts,
+        POOL2_TOKEN_ID,
+        2,
+        share_score,
+    );
+
+    let transfers = vec![new_nft_transfer(POOL2_TOKEN_ID, 2, snake_sfts_to_stake)];
+    setup.stake(&transfers, NO_ERR_MSG);
+    setup.assert_user_score(StakingModuleType::All, 0);
+    setup.assert_user_score(StakingModuleType::SnakesSfts, 0);
+    setup.assert_user_score(StakingModuleType::SharesSfts, expected_shares_score);
+    setup.assert_raw_user_score(StakingModuleType::SharesSfts, expected_shares_score);
+}
+
+#[test]
+fn staking_snakes_updates_both_scores() {
+    let snake_sfts_to_stake = 10;
+    let share_sfts_to_stake = 100;
+    let snake_module_score = 10000;
+    let snake_share_module_score = 500;
+    let share_module_score = 1;
+
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::SnakesSfts);
+    setup.set_token_nonce_score(
+        StakingModuleType::SnakesSfts,
+        POOL2_TOKEN_ID,
+        1,
+        snake_module_score,
+    );
+    setup.set_token_nonce_score(
+        StakingModuleType::SharesSfts,
+        POOL2_TOKEN_ID,
+        1,
+        snake_share_module_score,
+    );
+    setup.set_token_nonce_score(
+        StakingModuleType::SharesSfts,
+        POOL2_TOKEN_ID,
+        2,
+        share_module_score,
+    );
+
+    let transfers = vec![
+        new_nft_transfer(POOL2_TOKEN_ID, 1, snake_sfts_to_stake),
+        new_nft_transfer(POOL2_TOKEN_ID, 2, share_sfts_to_stake),
+    ];
+    setup.stake(&transfers, NO_ERR_MSG);
+
+    let expected_snake_score = snake_sfts_to_stake * snake_module_score as u64;
+    let expected_share_score = share_sfts_to_stake * share_module_score as u64
+        + snake_sfts_to_stake * snake_share_module_score as u64;
+
+    setup.assert_user_score(StakingModuleType::All, 0);
+    setup.assert_user_score(StakingModuleType::SnakesSfts, expected_snake_score);
+    setup.assert_user_score(StakingModuleType::SharesSfts, expected_share_score);
+    setup.assert_raw_user_score(StakingModuleType::SharesSfts, expected_share_score);
+}
