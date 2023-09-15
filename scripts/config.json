@@ -1,0 +1,108 @@
+{
+  "address": {
+    "DEVNET": "erd1qqqqqqqqqqqqqpgq7z49p3gkskpl0f8x45scaly22pqnww2z6ppsm54eug"
+  },
+  "deploymentArgs": {
+    "gasLimit": 85000000,
+    "payable": false,
+    "payableBySc": false,
+    "DEVNET": [
+      {
+        "name": "primary reward token id",
+        "type": "TokenIdentifier",
+        "value": "OURO-9ecd6a"
+      }
+    ],
+    "MAINNET": [
+      {
+        "name": "primary reward token id",
+        "type": "TokenIdentifier",
+        "value": "OURO-9ecd6a"
+      }
+    ]
+  },
+  "poolSettings": {
+    "DEVNET": {
+      "pools": [
+        {
+          "name": "Snake SFTs",
+          "collectionTokenIdentifier": "DEMIOU-704b5c",
+          "stakingModuleType": "SnakesSfts",
+          "scoreConfiguration": {
+            "All": {
+              "base": 0
+            },
+            "SnakesSfts": {
+              "base": 10000
+            }
+          }
+        },
+        {
+          "name": "Coding Division SFTs",
+          "collectionTokenIdentifier": "DHCD-bc9963",
+          "stakingModuleType": "CodingDivisionSfts",
+          "scoreConfiguration": {
+            "All": {
+              "base": 5,
+              "fullSetBonusScore": 25
+            },
+            "CodingDivisionSfts": {
+              "base": 5
+            }
+          }
+        },
+        {
+          "name": "Bloodshed NFTs",
+          "collectionTokenIdentifier": "BLOODSHED-a62781",
+          "stakingModuleType": "Bloodshed",
+          "scoreConfiguration": {
+            "All": {
+              "base": 1,
+              "granular": [
+                {
+                  "nonceRange": {
+                    "start": 555,
+                    "end": 1157
+                  },
+                  "score": 3
+                },
+                {
+                  "nonceRange": {
+                    "start": 153,
+                    "end": 554
+                  },
+                  "score": 4
+                },
+                {
+                  "nonceRange": {
+                    "start": 1,
+                    "end": 152
+                  },
+                  "score": 11
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "XBunnies NFTs",
+          "collectionTokenIdentifier": "DHXBUNNIES-862129",
+          "stakingModuleType": "XBunnies",
+          "scoreConfiguration": {
+            "All": {
+              "base": 2,
+              "granular": [
+                {
+                  "nonces": [388, 407, 25, 880, 274, 873, 1095, 175, 954, 1033],
+                  "score": 160
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "rewardTokens": []
+    },
+    "MAINNET": []
+  }
+}

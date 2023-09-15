@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@multiversx/sdk-core": "^12.4.0",
+    "@multiversx/sdk-network-providers": "^1.4.0",
+    "@multiversx/sdk-wallet": "^4.2.0",
+    "axios": "^1.4.0",
+    "bignumber.js": "^9.1.1",
+    "dotenv": "^16.3.1",
+    "fs": "^0.0.1-security",
+    "prompt-sync": "^4.2.0"
+  }
+}
