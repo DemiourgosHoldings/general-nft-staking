@@ -37,6 +37,17 @@ pub trait OwnerModule:
     }
 
     #[only_owner]
+    #[payable("*")]
+    #[endpoint(distributeCompanyShareReward)]
+    fn distribute_company_share_reward(&self) {
+        let staking_module_type = StakingModuleType::SharesSfts;
+        let total_score = self.aggregated_staking_score(&staking_module_type).get();
+        let payment = self.call_value().single_esdt();
+
+        self.distribute_reward_handler(&staking_module_type, payment, total_score);
+    }
+
+    #[only_owner]
     #[endpoint(updateDeb)]
     fn update_deb(&self, user_address: ManagedAddress, new_deb: BigUint) {
         secure_rewards(
