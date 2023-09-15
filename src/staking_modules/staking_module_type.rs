@@ -21,6 +21,7 @@ pub enum StakingModuleType {
     Nosferatu = 4,
     VestaXDAO = 5,
     SnakesSfts = 6,
+    SharesSfts = 7,
 
     All = 100,
 }
@@ -35,6 +36,7 @@ impl StakingModuleType {
             Self::Nosferatu,
             Self::VestaXDAO,
             Self::SnakesSfts,
+            Self::SharesSfts,
             Self::All,
         ]
     }
@@ -53,6 +55,7 @@ where
     Nosferatu(DefaultStakingModule<'a, C>),
     VestaXDAO(DefaultStakingModule<'a, C>),
     SnakesSfts(SnakesSftStakingModule<'a, C>),
+    SharesSfts(DefaultStakingModule<'a, C>),
 
     All(DefaultStakingModule<'a, C>),
 }
@@ -110,6 +113,9 @@ where
             StakingModuleType::SnakesSfts => StakingModuleTypeMapping::SnakesSfts(
                 SnakesSftStakingModule::new(sc_ref, token_identifier, user_address, self.clone()),
             ),
+            StakingModuleType::SharesSfts => StakingModuleTypeMapping::SnakesSfts(
+                SnakesSftStakingModule::new(sc_ref, token_identifier, user_address, self.clone()),
+            ),
             StakingModuleType::All => StakingModuleTypeMapping::All(DefaultStakingModule::new(
                 sc_ref,
                 token_identifier,
@@ -148,6 +154,7 @@ where
             StakingModuleTypeMapping::Nosferatu(module) => module.get_base_user_score(module_type),
             StakingModuleTypeMapping::VestaXDAO(module) => module.get_base_user_score(module_type),
             StakingModuleTypeMapping::SnakesSfts(module) => module.get_base_user_score(module_type),
+            StakingModuleTypeMapping::SharesSfts(module) => module.get_base_user_score(module_type),
             StakingModuleTypeMapping::All(module) => module.get_base_user_score(module_type),
         }
     }
@@ -163,6 +170,7 @@ where
             StakingModuleTypeMapping::Nosferatu(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::VestaXDAO(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::SnakesSfts(module) => module.add_to_storage(nonce, amount),
+            StakingModuleTypeMapping::SharesSfts(module) => module.add_to_storage(nonce, amount),
             StakingModuleTypeMapping::All(module) => module.add_to_storage(nonce, amount),
         }
     }
@@ -176,6 +184,7 @@ where
             StakingModuleTypeMapping::Nosferatu(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::VestaXDAO(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::SnakesSfts(module) => module.start_unbonding(payload),
+            StakingModuleTypeMapping::SharesSfts(module) => module.start_unbonding(payload),
             StakingModuleTypeMapping::All(module) => module.start_unbonding(payload),
         }
     }
