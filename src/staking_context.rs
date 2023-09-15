@@ -129,11 +129,7 @@ where
         aggregated_general_score: &BigUint<C::Api>,
     ) {
         let new_base_user_score = self.staking_module_impl.get_base_user_score(module_type);
-
-        let new_pool_user_score = match module_type == &StakingModuleType::All {
-            true => Self::apply_deb(&new_base_user_score, &self.user_deb),
-            false => new_base_user_score.clone(),
-        };
+        let new_pool_user_score = Self::apply_deb(&new_base_user_score, &self.user_deb);
         if &new_pool_user_score == initial_pool_user_score {
             return;
         }
