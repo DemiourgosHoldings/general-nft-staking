@@ -34,6 +34,18 @@
             },
             "SnakesSfts": {
               "base": 10000
+            },
+            "SharesSfts": {
+              "granular": [
+                {
+                  "nonces": [1],
+                  "score": 500
+                },
+                {
+                  "nonces": [2],
+                  "score": 1
+                }
+              ]
             }
           }
         },
