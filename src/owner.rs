@@ -172,6 +172,11 @@ pub trait OwnerModule:
         collection_token_identifier: TokenIdentifier,
         staking_module_type: StakingModuleType,
     ) {
+        require!(
+            self.stake_pool_type_configuration(&collection_token_identifier)
+                .is_empty(),
+            ERR_COLLECTION_ALREADY_REGISTERED
+        );
         self.stake_pool_type_configuration(&collection_token_identifier)
             .set(staking_module_type);
         require!(
@@ -179,6 +184,17 @@ pub trait OwnerModule:
                 .insert(collection_token_identifier),
             ERR_COLLECTION_ALREADY_REGISTERED
         );
+    }
+
+    #[only_owner]
+    #[endpoint(overridePoolType)]
+    fn override_stake_pool_type(
+        &self,
+        collection_token_identifier: TokenIdentifier,
+        staking_module_type: StakingModuleType,
+    ) {
+        self.stake_pool_type_configuration(&collection_token_identifier)
+            .set(staking_module_type);
     }
 
     #[only_owner]
@@ -203,6 +219,22 @@ pub trait OwnerModule:
         nonces: MultiValueEncoded<u64>,
     ) {
         for nonce in nonces.to_vec().iter() {
+            self.nonce_asset_score(collection_token_identifier, nonce, staking_module)
+                .set(&score);
+        }
+    }
+
+    #[only_owner]
+    #[endpoint(setNonceAssetScoreByRange)]
+    fn set_nonce_asset_score_by_range(
+        &self,
+        collection_token_identifier: &TokenIdentifier,
+        staking_module: &StakingModuleType,
+        score: usize,
+        nonce_range_start: u64,
+        nonce_range_end: u64,
+    ) {
+        for nonce in nonce_range_start..=nonce_range_end {
             self.nonce_asset_score(collection_token_identifier, nonce, staking_module)
                 .set(&score);
         }

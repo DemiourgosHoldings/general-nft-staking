@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           22
+// Endpoints:                           34
 // Async Callback (empty):               1
-// Total number of exported functions:  24
+// Total number of exported functions:  36
 
 #![no_std]
 
@@ -28,22 +28,34 @@ multiversx_sc_wasm_adapter::endpoints! {
         claimRewards => claim_rewards
         getPendingReward => get_pending_reward
         getStakingPoolTypeConfiguration => stake_pool_type_configuration
+        getStakingModulesByRewardToken => reward_token_to_staking_module_map
         getUnbondingTimePenalty => unbonding_time_penalty
-        getRewardTokenIdentifier => primary_reward_token_identifier
+        getRewardTokenIdentifiers => reward_token_identifiers
+        getPrimaryRewardTokenIdentifier => primary_reward_token_identifier
+        getEligibleStakeTokenIdentifiers => eligible_stake_token_identifiers
         getBaseAssetScore => base_asset_score
         getNonceAssetScore => nonce_asset_score
         getFullSetScore => full_set_score
         getStakedNfts => staked_nfts
+        getUnbondingAssets => unbonding_assets
         getUserDeb => user_deb
+        getRawAggregatedUserStakingScore => raw_aggregated_user_staking_score
         getAggregatedStakingScore => aggregated_staking_score
         getAggregatedUserStakingScore => aggregated_user_staking_score
         getPendingRewards => pending_rewards
-        getUnbondingAssets => unbonding_assets
         getLastClaimedEpoch => last_claimed_epoch
         getRewardRate => reward_rate
         getRewardDistributionTimestamp => reward_distribution_timestamp
         distributeGeneralReward => distribute_reward
+        distributeSecondaryReward => distribute_secondary_reward
+        distributeCompanyShareReward => distribute_company_share_reward
         updateDeb => update_deb
+        createPool => register_new_staking_pool
+        setBaseAssetScore => set_base_asset_score
+        setNonceAssetScore => set_nonce_asset_score
+        setNonceAssetScoreByRange => set_nonce_asset_score_by_range
+        registerRewardToken => register_reward_token
+        setFullSetScore => set_full_set_score
     )
 }
 

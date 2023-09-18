@@ -11,3 +11,6 @@
 # scripts node_module
 */node_modules/
 */.env
+
+.DS_Store
+*/.DS_Store
