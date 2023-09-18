@@ -6,8 +6,7 @@ use nft_staking::{
 };
 
 use crate::setup::{
-    constants::{NO_ERR_MSG, POOL1_TOKEN_ID, POOL2_TOKEN_ID},
-    types::new_nft_transfer,
+    constants::{POOL1_TOKEN_ID, POOL2_TOKEN_ID},
     ContractSetup,
 };
 
