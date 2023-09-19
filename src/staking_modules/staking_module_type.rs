@@ -15,15 +15,14 @@ multiversx_sc::derive_imports!();
 )]
 pub enum StakingModuleType {
     Invalid = 0,
-    CodingDivisionSfts = 1,
-    XBunnies = 2,
+    All = 1,
+    CodingDivisionSfts = 2,
     Bloodshed = 3,
     Nosferatu = 4,
     VestaXDAO = 5,
     SnakesSfts = 6,
     SharesSfts = 7,
-
-    All = 100,
+    XBunnies = 8,
 }
 
 impl StakingModuleType {
