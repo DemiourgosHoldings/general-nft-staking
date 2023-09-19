@@ -103,7 +103,7 @@ const handleRegisterNewStakingPool = async (tokenIdentifier, moduleType) => {
   let tx = contract.methodsExplicit
     .createPool([
       new TokenIdentifierValue(tokenIdentifier),
-      new U8Value(moduleType),
+      new U8Value(parseInt(moduleType) + 1),
     ])
     .withChainID("D")
     .withGasLimit(15_000_000);
@@ -135,15 +135,17 @@ const handleConfigureScore = async (row) => {
   let columns = row.split(",");
 
   let tokenIdentifier = columns[0];
-  let nonces = columns[1].length === 0 ? [] : columns[1].split(";");
-  let nonceRangeStart = columns[2] === "" ? undefined : columns[2];
-  let nonceRangeEnd = columns[3] === "" ? undefined : columns[3];
-  let score = columns[4];
-  let fullSetBonusScore = columns[5] === "" ? undefined : columns[5];
+  let stakingModuleType = columns[1] === "" ? 1 : parseInt(columns[1]);
+  let nonces = columns[2].length === 0 ? [] : columns[2].split(";");
+  let nonceRangeStart = columns[3] === "" ? undefined : columns[3];
+  let nonceRangeEnd = columns[4] === "" ? undefined : columns[4];
+  let score = columns[5];
+  let fullSetBonusScore = columns[6] === "" ? undefined : columns[6];
 
   process.stdout.write(
     getPoolRowMessage(
       tokenIdentifier,
+      stakingModuleType,
       nonces,
       nonceRangeStart,
       nonceRangeEnd,
@@ -159,14 +161,24 @@ const handleConfigureScore = async (row) => {
     nonceRangeStart === undefined &&
     nonceRangeEnd === undefined
   ) {
-    status = await sendSetBaseAssetScoreTx(tokenIdentifier, score);
+    status = await sendSetBaseAssetScoreTx(
+      tokenIdentifier,
+      stakingModuleType,
+      score
+    );
   }
   if (nonces.length > 0) {
-    status = await sendSetNonceAssetScoreTx(tokenIdentifier, nonces, score);
+    status = await sendSetNonceAssetScoreTx(
+      tokenIdentifier,
+      stakingModuleType,
+      nonces,
+      score
+    );
   }
   if (nonceRangeStart !== undefined && nonceRangeEnd !== undefined) {
     status = await sendSetNonceAssetScoreByRangeTx(
       tokenIdentifier,
+      stakingModuleType,
       nonceRangeStart,
       nonceRangeEnd,
       score
@@ -176,6 +188,7 @@ const handleConfigureScore = async (row) => {
   if (fullSetBonusScore !== undefined) {
     let fullSetScoreResult = await sendSetFullSetBonusScoreTx(
       tokenIdentifier,
+      stakingModuleType,
       fullSetBonusScore
     );
     status = status && fullSetScoreResult;
@@ -185,6 +198,7 @@ const handleConfigureScore = async (row) => {
   process.stdout.write(
     getPoolRowMessage(
       tokenIdentifier,
+      stakingModuleType,
       nonces,
       nonceRangeStart,
       nonceRangeEnd,
@@ -195,12 +209,16 @@ const handleConfigureScore = async (row) => {
   );
 };
 
-const sendSetBaseAssetScoreTx = async (tokenIdentifier, score) => {
+const sendSetBaseAssetScoreTx = async (
+  tokenIdentifier,
+  stakingModuleType,
+  score
+) => {
   let contract = await getSmartContract();
   let tx = contract.methodsExplicit
     .setBaseAssetScore([
       new TokenIdentifierValue(tokenIdentifier),
-      new U32Value(1),
+      new U32Value(stakingModuleType),
       new U32Value(score),
     ])
     .withGasLimit(15_000_000);
@@ -208,14 +226,19 @@ const sendSetBaseAssetScoreTx = async (tokenIdentifier, score) => {
   return await signAndSendTx(tx);
 };
 
-const sendSetNonceAssetScoreTx = async (tokenIdentifier, nonces, score) => {
+const sendSetNonceAssetScoreTx = async (
+  tokenIdentifier,
+  stakingModuleType,
+  nonces,
+  score
+) => {
   let contract = await getSmartContract();
   let noncesArg = nonces.map((nonce) => new U64Value(nonce));
   let tx = contract.methodsExplicit
     .setNonceAssetScore(
       [
         new TokenIdentifierValue(tokenIdentifier),
-        new U8Value(1),
+        new U8Value(stakingModuleType),
         new U32Value(score),
       ].concat(noncesArg)
     )
@@ -226,6 +249,7 @@ const sendSetNonceAssetScoreTx = async (tokenIdentifier, nonces, score) => {
 
 const sendSetNonceAssetScoreByRangeTx = async (
   tokenIdentifier,
+  stakingModuleType,
   nonceRangeStart,
   nonceRangeEnd,
   score
@@ -235,7 +259,7 @@ const sendSetNonceAssetScoreByRangeTx = async (
   let tx = contract.methodsExplicit
     .setNonceAssetScoreByRange([
       new TokenIdentifierValue(tokenIdentifier),
-      new U8Value(1),
+      new U8Value(stakingModuleType),
       new U32Value(score),
       new U64Value(nonceRangeStart),
       new U64Value(nonceRangeEnd),
@@ -245,12 +269,16 @@ const sendSetNonceAssetScoreByRangeTx = async (
   return await signAndSendTx(tx);
 };
 
-const sendSetFullSetBonusScoreTx = async (tokenIdentifier, score) => {
+const sendSetFullSetBonusScoreTx = async (
+  tokenIdentifier,
+  stakingModuleType,
+  score
+) => {
   let contract = await getSmartContract();
   let tx = contract.methodsExplicit
     .setFullSetScore([
       new TokenIdentifierValue(tokenIdentifier),
-      new U8Value(1),
+      new U8Value(stakingModuleType),
       new U32Value(score),
     ])
     .withGasLimit(15_000_000);
@@ -260,6 +288,7 @@ const sendSetFullSetBonusScoreTx = async (tokenIdentifier, score) => {
 
 const getPoolRowMessage = (
   tokenIdentifier,
+  stakingModuleType,
   nonces,
   nonceRangeStart,
   nonceRangeEnd,
@@ -269,6 +298,9 @@ const getPoolRowMessage = (
 ) => {
   let statusMessage = chalk.white("Setting up ");
   statusMessage += chalk.yellow(tokenIdentifier);
+  statusMessage += chalk.white(", module type ");
+  statusMessage += chalk.yellow(stakingModuleType);
+
   if (nonces.length > 0) {
     statusMessage += chalk.white(" for ");
     statusMessage += chalk.yellow(nonces.join(", "));

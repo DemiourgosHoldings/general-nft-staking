@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           34
+// Endpoints:                           35
 // Async Callback (empty):               1
-// Total number of exported functions:  36
+// Total number of exported functions:  37
 
 #![no_std]
 
@@ -51,6 +51,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         distributeCompanyShareReward => distribute_company_share_reward
         updateDeb => update_deb
         createPool => register_new_staking_pool
+        overridePoolType => override_stake_pool_type
         setBaseAssetScore => set_base_asset_score
         setNonceAssetScore => set_nonce_asset_score
         setNonceAssetScoreByRange => set_nonce_asset_score_by_range

@@ -1,7 +1,7 @@
 use crate::{
     constants::{
-        DEB_DENOMINATION, ERR_COLLECTION_ALREADY_REGISTERED, ERR_INVALID_REWARD_TOKEN_ID,
-        ERR_REWARD_ALREADY_DISTRIBUTED,
+        DEB_DENOMINATION, ERR_CANNOT_REGISTER_AS_ALL, ERR_COLLECTION_ALREADY_REGISTERED,
+        ERR_INVALID_REWARD_TOKEN_ID, ERR_REWARD_ALREADY_DISTRIBUTED,
     },
     staking_modules::staking_module_type::StakingModuleType,
     utils::secure_rewards,
@@ -172,6 +172,10 @@ pub trait OwnerModule:
         collection_token_identifier: TokenIdentifier,
         staking_module_type: StakingModuleType,
     ) {
+        require!(
+            &staking_module_type != &StakingModuleType::All,
+            ERR_CANNOT_REGISTER_AS_ALL
+        );
         require!(
             self.stake_pool_type_configuration(&collection_token_identifier)
                 .is_empty(),
