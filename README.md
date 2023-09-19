@@ -230,67 +230,29 @@ Upgrades an existing instance of the contract using the same procedure explained
 
 ### Commit Pools Data
 
-Will look in the `config.json` for uncomitted pools. Once a pool has been setup, it will be market as committed and ignored for further updates. If a pool must be updated, remove the "isCommitted" property and run the script again.
+Creating or updating a pool happens using a .CSV configuration file.
+All the data that needs to be set for a pool must be formatted accordingly and saved in a .CSV file. Once prompted, specify the full path of the file and let the script do it's magic.
 
-#### Pool Settings that must be provided:
+The script doesn't check if the CSV data is already committed to the blockchain. Every line of the CSV will be executed as a transaction - **do not include data that is already been set unless you wish to spend more gas.**
 
-- `name`: Ignored by the script, useful for keeping track of which pool does what
-- `collectionTokenIdentifier`: The NFT/SFT collection token identifier of the pool
-- `stakingModuleType`: One of the following values
-  - CodingDivisionSfts
-  - XBunnies
-  - Bloodshed
-  - Nosferatu
-  - VestaXDAO
-  - SnakesSfts
-- `scoreConfiguration`: the scores based on which the reward is being distributed. Example of configuration:
+Possible columns:
 
-```json
-{
-    ...
-    "scoreConfiguration": {
-          "All": {
-            "base": 10,
-            "granular": []
-          },
-          "XBunnies": {
-            "base": 5,
-            "granular": [
-                {
-                    "nonces": [10, 11, 12],
-                    "score": 10
-                },
-                {
-                    "nonces": [210, 211, 212],
-                    "score": 15
-                },
-                {
-                    "nonces": [310, 311, 312, 313],
-                    "score": 20
-                },
-            ]
-          }
-        }
-    ...
-}
+- token identifier
+- nonce filters:
+  - Nonces: semi-column separated - 11;23;409;1223;etc
+  - Nonce range: start and end nonces, inclusive values, one per column
+- score
+- full set bonus score
+
+**.CSV header**
+
+This is the parsing order and must be respected in order for the script to work properly. In case a nonce column does not apply, leave it empty.
+
+> [!NOTE]
+> You can both include/exclude the headers, the script will ask you for confirmation before executing.
+
+```
+Token Identifier;Nonces;Nonce Range Start;Nonce Range End;Score;Full Set Score
 ```
 
-#### Reward tokens
-
-Each reward token must be registered as a pool reward if it's going to be distributed to a specific pool.
-These tokens can be set under `"poolSettings[ENVIRONMENT][rewardTokens]"` as key-value pairs. Example:
-
-```json
-{
-  ...
-  "rewardTokens": [
-    {
-      "tokenIdentifier": "REWARDTKN-123456",
-      "stakingModuleType": "XBunnies"
-    }
-  ]
-  ...
-}
-```
-
-The same `"isCommitted"` logic is applied here as well.
+You can check the scripts folder for a .CSV example used when initializing the subsidiaries.

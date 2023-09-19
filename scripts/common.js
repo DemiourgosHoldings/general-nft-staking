@@ -40,8 +40,6 @@ const loadNetworkConfig = () => {
 const networkCfg = loadNetworkConfig();
 
 const getPemAndAccount = async () => {
-  console.log(`Loading pem and account for ${process.env.ENVIRONMENT}...`);
-  console.log(`PEM Path: ${networkCfg.pem}`);
   const apiProvider = new ApiNetworkProvider(networkCfg.api);
   const pemContent = await loadPemContent(networkCfg.pem);
   const account = await loadUserAccount(apiProvider, pemContent);
@@ -81,7 +79,7 @@ const getSmartContract = async () => {
   });
 };
 
-const signAndSend = async (tx, walletPemContents) => {
+const signAndSendExplicit = async (tx, walletPemContents) => {
   const provider = getProxyProvider();
   const signer = prepareUserSigner(walletPemContents);
   const serializedTransaction = tx.serializeForSigning();
@@ -132,7 +130,7 @@ const deploy = async () => {
   transaction.setNonce(account.getNonceThenIncrement());
 
   console.log(`Deploying contract on ${process.env.ENVIRONMENT}...`);
-  const txResult = await signAndSend(transaction, pem);
+  const txResult = await signAndSendExplicit(transaction, pem);
   const deployedAddress = deploymentTransactionResultHandler(txResult);
 
   if (deployedAddress !== "") {
@@ -168,7 +166,7 @@ const upgrade = async () => {
   transaction.setNonce(account.getNonceThenIncrement());
 
   console.log(`Upgrading contract on ${process.env.ENVIRONMENT}...`);
-  const txResult = await signAndSend(transaction, pem);
+  const txResult = await signAndSendExplicit(transaction, pem);
   const deployedAddress = deploymentTransactionResultHandler(txResult);
 
   if (deployedAddress !== "") {
@@ -204,12 +202,29 @@ const buildDeployArgs = () => {
   return args;
 };
 
+const signAndSendTx = async (txInteraction) => {
+  let { pem, account } = await getPemAndAccount();
+  let tx = txInteraction
+    .withChainID(networkCfg.chain)
+    .withSender(account.address)
+    .buildTransaction();
+
+  tx.setNonce(account.getNonceThenIncrement());
+  let txResult = await signAndSendExplicit(tx, pem);
+
+  return (
+    !txResult.status.isFailed() &&
+    !txResult.status.isInvalid() &&
+    !txResult.status.isPending()
+  );
+};
+
 module.exports = {
   loadNetworkConfig,
   getPemAndAccount,
   getSmartContract,
   resultsParser: Parser,
-  signAndSend,
+  signAndSendTx,
   getProxyProvider,
 
   deploy,

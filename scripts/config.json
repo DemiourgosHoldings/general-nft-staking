@@ -1,6 +1,6 @@
 {
   "address": {
-    "DEVNET": "erd1qqqqqqqqqqqqqpgq7z49p3gkskpl0f8x45scaly22pqnww2z6ppsm54eug"
+    "DEVNET": "erd1qqqqqqqqqqqqqpgqmzt9ntca4ffuf9j7rff5xx3pcfepasc36ppsv65tg4"
   },
   "deploymentArgs": {
     "gasLimit": 85000000,
@@ -38,11 +38,15 @@
             "SharesSfts": {
               "granular": [
                 {
-                  "nonces": [1],
+                  "nonces": [
+                    1
+                  ],
                   "score": 500
                 },
                 {
-                  "nonces": [2],
+                  "nonces": [
+                    2
+                  ],
                   "score": 1
                 }
               ]
@@ -105,7 +109,18 @@
               "base": 2,
               "granular": [
                 {
-                  "nonces": [388, 407, 25, 880, 274, 873, 1095, 175, 954, 1033],
+                  "nonces": [
+                    388,
+                    407,
+                    25,
+                    880,
+                    274,
+                    873,
+                    1095,
+                    175,
+                    954,
+                    1033
+                  ],
                   "score": 160
                 }
               ]
