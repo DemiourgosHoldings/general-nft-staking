@@ -19,6 +19,7 @@ pub mod staking_modules;
 pub mod storage;
 pub mod types;
 pub mod utils;
+pub mod views;
 
 #[multiversx_sc::contract]
 pub trait NftStakingContract:
@@ -26,6 +27,7 @@ pub trait NftStakingContract:
     + storage::score::ScoreStorageModule
     + storage::user_data::UserDataStorageModule
     + owner::OwnerModule
+    + views::ViewsModule
 {
     #[init]
     fn init(&self, primary_reward_token_identifier: TokenIdentifier) {

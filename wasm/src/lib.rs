@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           35
+// Endpoints:                           38
 // Async Callback (empty):               1
-// Total number of exported functions:  37
+// Total number of exported functions:  40
 
 #![no_std]
 
@@ -57,6 +57,9 @@ multiversx_sc_wasm_adapter::endpoints! {
         setNonceAssetScoreByRange => set_nonce_asset_score_by_range
         registerRewardToken => register_reward_token
         setFullSetScore => set_full_set_score
+        getGeneralStakingData => get_general_staking_data
+        getUserStakingData => get_user_staking_data
+        getUserPoolStakingData => get_user_pool_data
     )
 }
 
