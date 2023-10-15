@@ -2,7 +2,7 @@
 
 use constants::{DEFAULT_UNBONDING_TIME_PENALTY, ERR_FAILED_UNBONDING, ERR_ONE_TOKEN_ID_SUPPORTED};
 use staking_context::StakingContext;
-use types::start_unbonding_payload::StartUnbondingPayload;
+use types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
 use utils::get_all_pending_rewards;
 
 use crate::{
@@ -110,7 +110,8 @@ pub trait NftStakingContract:
         require!(
             self.staked_nfts(&payload.token_identifier)
                 .contains_key(&self.blockchain().get_caller())
-                && !payload.is_empty(),
+                && !payload.is_empty()
+                && !self.has_duplicate_nonces(&payload.items),
             ERR_FAILED_UNBONDING
         );
     }
@@ -121,5 +122,16 @@ pub trait NftStakingContract:
                 .contains(token_identifier),
             ERR_INVALID_STAKED_TOKEN_ID
         );
+    }
+
+    fn has_duplicate_nonces(&self, items: &ManagedVec<NonceQtyPair<Self::Api>>) -> bool {
+        let mut nonces: ManagedVec<u64> = items.iter().map(|item| item.nonce).collect();
+        nonces.sort_unstable();
+        for i in 0..(nonces.len() - 1) {
+            if nonces.get(i) == nonces.get(i + 1) {
+                return true;
+            }
+        }
+        false
     }
 }
