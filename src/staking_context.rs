@@ -26,6 +26,7 @@ where
     secondary_initial_pool_user_score: BigUint<C::Api>,
     staking_module_type: StakingModuleType,
     staking_module_impl: StakingModuleTypeMapping<'a, C>,
+    token_identifier: TokenIdentifier<C::Api>,
 }
 
 impl<'a, C> StakingContext<'a, C>
@@ -33,6 +34,7 @@ where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::score::ScoreStorageModule,
     C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::requirements::RequirementsModule,
 {
     pub fn new(sc_ref: &'a C, payment_token_id: &TokenIdentifier<C::Api>) -> Self {
         let caller = sc_ref.blockchain().get_caller();
@@ -67,13 +69,16 @@ where
             secondary_initial_pool_user_score,
             staking_module_type,
             staking_module_impl,
+            token_identifier: payment_token_id.clone(),
         }
     }
 
     pub fn add_to_stake(&mut self, payments: &ManagedVec<C::Api, EsdtTokenPayment<C::Api>>) {
         self.secure_all_rewards();
-
         for payment in payments.iter() {
+            self.sc_ref
+                .require_token_matches(&self.token_identifier, &payment.token_identifier);
+
             self.staking_module_impl
                 .add_to_storage(payment.token_nonce, payment.amount);
         }
@@ -179,16 +184,22 @@ where
 
         user_score * deb / deb_denomination
     }
-}
 
-impl<'a, C> Drop for StakingContext<'a, C>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::score::ScoreStorageModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-{
-    fn drop(&mut self) {
+    pub fn drop(&mut self) {
         self.update_primary_score();
         self.update_secondary_score();
     }
 }
+
+// impl<'a, C> Drop for StakingContext<'a, C>
+// where
+//     C: crate::storage::config::ConfigModule,
+//     C: crate::storage::score::ScoreStorageModule,
+//     C: crate::storage::user_data::UserDataStorageModule,
+//     C: crate::requirements::RequirementsModule,
+// {
+// fn drop(&mut self) {
+//     self.update_primary_score();
+//     self.update_secondary_score();
+// }
+// }

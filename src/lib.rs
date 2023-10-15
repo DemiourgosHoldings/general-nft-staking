@@ -14,6 +14,7 @@ multiversx_sc::imports!();
 
 pub mod constants;
 pub mod owner;
+pub mod requirements;
 pub mod staking_context;
 pub mod staking_modules;
 pub mod storage;
@@ -28,6 +29,7 @@ pub trait NftStakingContract:
     + storage::user_data::UserDataStorageModule
     + owner::OwnerModule
     + views::ViewsModule
+    + requirements::RequirementsModule
 {
     #[init]
     fn init(&self, primary_reward_token_identifier: TokenIdentifier) {
@@ -46,6 +48,7 @@ pub trait NftStakingContract:
         self.require_same_token_id(&payments);
         let mut context = StakingContext::new(self, &payments.get(0).token_identifier);
         context.add_to_stake(&payments);
+        context.drop();
     }
 
     #[endpoint(startUnbonding)]
@@ -55,6 +58,7 @@ pub trait NftStakingContract:
         let mut context = StakingContext::new(self, &payload.token_identifier);
         let is_unbonding_successful = context.start_unbonding(payload);
         require!(is_unbonding_successful, ERR_FAILED_UNBONDING);
+        context.drop();
     }
 
     #[endpoint(claimUnbonded)]

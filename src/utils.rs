@@ -90,11 +90,16 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let last_claimed_epoch = sc_ref.last_claimed_epoch(staking_module, address).get();
-    let current_epoch = sc_ref.blockchain().get_block_epoch();
     let user_score = sc_ref
         .aggregated_user_staking_score(staking_module, address)
         .get();
+
+    if &user_score == &0 {
+        return BigUint::zero();
+    }
+
+    let last_claimed_epoch = sc_ref.last_claimed_epoch(staking_module, address).get();
+    let current_epoch = sc_ref.blockchain().get_block_epoch();
 
     let mut pending_reward = BigUint::zero();
     for current_epoch in last_claimed_epoch + 1..=current_epoch {
