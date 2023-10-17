@@ -113,6 +113,7 @@ where
         snakes_score
     }
 
+    //TODO: use storage
     fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
         let existing_item_index = self
             .default_impl
