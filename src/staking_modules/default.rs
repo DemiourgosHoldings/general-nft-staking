@@ -11,8 +11,8 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     sc_ref: &'a C,
-    impl_token_id: TokenIdentifier<C::Api>,
-    user_address: ManagedAddress<C::Api>,
+    pub impl_token_id: TokenIdentifier<C::Api>,
+    pub user_address: ManagedAddress<C::Api>,
     pub module_type: StakingModuleType,
     // pub staked_assets: ManagedVec<C::Api, NonceQtyPair<C::Api>>,
 }

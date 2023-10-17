@@ -16,9 +16,7 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     sc_ref: &'a C,
-    impl_token_id: TokenIdentifier<C::Api>,
     default_impl: DefaultStakingModule<'a, C>,
-    user_address: ManagedAddress<C::Api>,
 }
 
 impl<'a, C> CodingDivisionSftStakingModule<'a, C>
@@ -41,17 +39,16 @@ where
         );
         Self {
             sc_ref,
-            impl_token_id,
             default_impl,
-            user_address,
         }
     }
 
     fn count_full_sets(&self) -> BigUint<C::Api> {
         let mut full_sets = BigUint::from(100_000u32);
-        let staked_assets = self
-            .sc_ref
-            .staked_nfts(&self.user_address, &self.impl_token_id);
+        let staked_assets = self.sc_ref.staked_nfts(
+            &self.default_impl.user_address,
+            &self.default_impl.impl_token_id,
+        );
 
         for set_nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
             let item_quantity = staked_assets.get(&set_nonce);
@@ -75,13 +72,13 @@ where
 
         let full_set_score = match self
             .sc_ref
-            .full_set_score(&self.impl_token_id, &StakingModuleType::All)
+            .full_set_score(&self.default_impl.impl_token_id, &StakingModuleType::All)
             .is_empty()
         {
             true => BigUint::zero(),
             false => BigUint::from(
                 self.sc_ref
-                    .full_set_score(&self.impl_token_id, &StakingModuleType::All)
+                    .full_set_score(&self.default_impl.impl_token_id, &StakingModuleType::All)
                     .get(),
             ),
         };
