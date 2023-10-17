@@ -48,7 +48,7 @@ pub trait NftStakingContract:
         self.require_same_token_id(&payments);
         let mut context = StakingContext::new(self, &payments.get(0).token_identifier);
         context.add_to_stake(&payments);
-        context.drop();
+        context.update_staking_scores();
     }
 
     #[endpoint(startUnbonding)]
@@ -58,7 +58,7 @@ pub trait NftStakingContract:
         let mut context = StakingContext::new(self, &payload.token_identifier);
         let is_unbonding_successful = context.start_unbonding(payload);
         require!(is_unbonding_successful, ERR_FAILED_UNBONDING);
-        context.drop();
+        context.update_staking_scores();
     }
 
     #[endpoint(claimUnbonded)]

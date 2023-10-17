@@ -185,21 +185,8 @@ where
         user_score * deb / deb_denomination
     }
 
-    pub fn drop(&mut self) {
+    pub fn update_staking_scores(&mut self) {
         self.update_primary_score();
         self.update_secondary_score();
     }
 }
-
-// impl<'a, C> Drop for StakingContext<'a, C>
-// where
-//     C: crate::storage::config::ConfigModule,
-//     C: crate::storage::score::ScoreStorageModule,
-//     C: crate::storage::user_data::UserDataStorageModule,
-//     C: crate::requirements::RequirementsModule,
-// {
-// fn drop(&mut self) {
-//     self.update_primary_score();
-//     self.update_secondary_score();
-// }
-// }
