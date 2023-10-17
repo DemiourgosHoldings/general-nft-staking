@@ -1,6 +1,6 @@
-use multiversx_sc::types::{BigUint, ManagedAddress, ManagedVec, TokenIdentifier};
+use multiversx_sc::types::{BigUint, ManagedAddress, TokenIdentifier};
 
-use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
+use crate::types::start_unbonding_payload::StartUnbondingPayload;
 
 use super::staking_module_type::{StakingModuleType, VestaStakingModule};
 
@@ -11,10 +11,9 @@ where
     C: crate::storage::user_data::UserDataStorageModule,
 {
     sc_ref: &'a C,
-    impl_token_id: TokenIdentifier<C::Api>,
-    user_address: ManagedAddress<C::Api>,
+    pub impl_token_id: TokenIdentifier<C::Api>,
+    pub user_address: ManagedAddress<C::Api>,
     pub module_type: StakingModuleType,
-    // pub staked_assets: ManagedVec<C::Api, NonceQtyPair<C::Api>>,
 }
 
 impl<'a, C> DefaultStakingModule<'a, C>
@@ -29,22 +28,12 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        // let staked_assets = Self::get_staked_assets(sc_ref, &impl_token_id, &user_address);
         Self {
             sc_ref,
             impl_token_id,
             user_address,
             module_type,
-            // staked_assets,
         }
-    }
-
-    fn get_staked_assets(
-        sc_ref: &'a C,
-        impl_token_id: &TokenIdentifier<C::Api>,
-        user_address: &ManagedAddress<C::Api>,
-    ) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
-        sc_ref.get_staked_nfts(user_address, impl_token_id)
     }
 }
 
@@ -61,7 +50,9 @@ where
                 .base_asset_score(&self.impl_token_id, staking_module_type)
                 .get(),
         );
-        let assets = Self::get_staked_assets(&self.sc_ref, &self.impl_token_id, &self.user_address);
+        let assets = self
+            .sc_ref
+            .get_staked_nfts(&self.user_address, &self.impl_token_id);
         for staked_nft_info in assets.iter() {
             let asset_nonce_score = self.sc_ref.nonce_asset_score(
                 &self.impl_token_id,
@@ -118,19 +109,5 @@ where
         }
 
         &total_unstaked_quantity > &0
-    }
-}
-
-impl<'a, C> Drop for DefaultStakingModule<'a, C>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::score::ScoreStorageModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-{
-    fn drop(&mut self) {
-        // commit changes to storage for the mutable fields
-        // self.sc_ref
-        //     .staked_nfts(&self.impl_token_id)
-        //     .insert(self.user_address.clone(), self.staked_assets.clone());
     }
 }
