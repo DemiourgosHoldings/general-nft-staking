@@ -18,6 +18,7 @@ where
     sc_ref: &'a C,
     impl_token_id: TokenIdentifier<C::Api>,
     default_impl: DefaultStakingModule<'a, C>,
+    user_address: ManagedAddress<C::Api>,
 }
 
 impl<'a, C> CodingDivisionSftStakingModule<'a, C>
@@ -32,28 +33,32 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        let default_impl =
-            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address, module_type);
+        let default_impl = DefaultStakingModule::new(
+            sc_ref,
+            impl_token_id.clone(),
+            user_address.clone(),
+            module_type,
+        );
         Self {
             sc_ref,
             impl_token_id,
             default_impl,
+            user_address,
         }
     }
 
     fn count_full_sets(&self) -> BigUint<C::Api> {
         let mut full_sets = BigUint::from(100_000u32);
+        let staked_assets = self
+            .sc_ref
+            .staked_nfts(&self.user_address, &self.impl_token_id);
 
         for set_nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
-            let item = self
-                .default_impl
-                .staked_assets
-                .iter()
-                .find(|p| p.nonce == set_nonce);
-            if item.is_none() {
+            let item_quantity = staked_assets.get(&set_nonce);
+            if item_quantity.is_none() {
                 return BigUint::zero();
             }
-            let item_quantity = item.unwrap().quantity;
+            let item_quantity = item_quantity.unwrap();
             if item_quantity < full_sets {
                 full_sets = item_quantity;
             }

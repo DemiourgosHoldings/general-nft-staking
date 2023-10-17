@@ -14,7 +14,7 @@ where
     impl_token_id: TokenIdentifier<C::Api>,
     user_address: ManagedAddress<C::Api>,
     pub module_type: StakingModuleType,
-    pub staked_assets: ManagedVec<C::Api, NonceQtyPair<C::Api>>,
+    // pub staked_assets: ManagedVec<C::Api, NonceQtyPair<C::Api>>,
 }
 
 impl<'a, C> DefaultStakingModule<'a, C>
@@ -29,13 +29,13 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        let staked_assets = Self::get_staked_assets(sc_ref, &impl_token_id, &user_address);
+        // let staked_assets = Self::get_staked_assets(sc_ref, &impl_token_id, &user_address);
         Self {
             sc_ref,
             impl_token_id,
             user_address,
             module_type,
-            staked_assets,
+            // staked_assets,
         }
     }
 
@@ -61,7 +61,8 @@ where
                 .base_asset_score(&self.impl_token_id, staking_module_type)
                 .get(),
         );
-        for staked_nft_info in self.staked_assets.iter() {
+        let assets = Self::get_staked_assets(&self.sc_ref, &self.impl_token_id, &self.user_address);
+        for staked_nft_info in assets.iter() {
             let asset_nonce_score = self.sc_ref.nonce_asset_score(
                 &self.impl_token_id,
                 staked_nft_info.nonce,

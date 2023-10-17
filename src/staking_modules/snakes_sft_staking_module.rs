@@ -78,8 +78,10 @@ where
         );
 
         let mut shares_score = BigUint::<C::Api>::zero();
-
-        for staked_nft_info in self.default_impl.staked_assets.iter() {
+        let staked_assets = self
+            .sc_ref
+            .get_staked_nfts(&self.user_address, &self.impl_token_id);
+        for staked_nft_info in staked_assets.iter() {
             if staked_nft_info.nonce == 1 {
                 let asset_nonce_score = self.sc_ref.nonce_asset_score(
                     &self.impl_token_id,
