@@ -7,12 +7,30 @@ multiversx_sc::imports!();
 
 #[multiversx_sc::module]
 pub trait UserDataStorageModule {
+    fn get_staked_nfts(
+        &self,
+        address: &ManagedAddress,
+        token_identifier: &TokenIdentifier,
+    ) -> ManagedVec<NonceQtyPair<Self::Api>> {
+        let mut staked_nfts = ManagedVec::new();
+        for staked_nft in self.staked_nfts(address, token_identifier).iter() {
+            let (nonce, qty) = staked_nft;
+            staked_nfts.push(NonceQtyPair {
+                nonce: nonce,
+                quantity: qty,
+            });
+        }
+
+        staked_nfts
+    }
+
     #[view(getStakedNfts)]
     #[storage_mapper("staked_nfts")]
     fn staked_nfts(
         &self,
+        address: &ManagedAddress,
         token_identifier: &TokenIdentifier,
-    ) -> MapMapper<ManagedAddress, ManagedVec<NonceQtyPair<Self::Api>>>;
+    ) -> MapMapper<u64, BigUint>;
 
     #[view(getUnbondingAssets)]
     #[storage_mapper("unbonding_assets")]

@@ -1,8 +1,11 @@
 use crate::{
     staking_modules::staking_module_type::StakingModuleType,
-    types::ui_types::{
-        UIAggregatedPoolScore, UIExtendedAggregatedPoolScore, UIUnbondingAsset, UIUserDataPayload,
-        UIUserPoolData,
+    types::{
+        nonce_qty_pair::NonceQtyPair,
+        ui_types::{
+            UIAggregatedPoolScore, UIExtendedAggregatedPoolScore, UIUnbondingAsset,
+            UIUserDataPayload, UIUserPoolData,
+        },
     },
     utils::get_all_pending_rewards,
 };
@@ -62,12 +65,10 @@ pub trait ViewsModule:
         address: &ManagedAddress,
         token_identifier: &TokenIdentifier<Self::Api>,
     ) -> Option<UIUserPoolData<Self::Api>> {
-        let staked_nfts_opt = self.staked_nfts(&token_identifier).get(&address);
-        if staked_nfts_opt.is_none() {
+        let pool_staked_assets = self.get_staked_nfts(address, token_identifier);
+        if pool_staked_assets.is_empty() {
             return Option::None;
         }
-
-        let pool_staked_assets = staked_nfts_opt.unwrap();
 
         let pool_module_type = self.stake_pool_type_configuration(token_identifier).get();
         let pool_score = self

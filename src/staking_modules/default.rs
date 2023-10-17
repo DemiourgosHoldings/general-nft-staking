@@ -50,10 +50,8 @@ where
         impl_token_id: &TokenIdentifier<C::Api>,
         user_address: &ManagedAddress<C::Api>,
     ) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
-        sc_ref
-            .staked_nfts(&impl_token_id)
-            .remove(&user_address)
-            .unwrap_or_else(|| ManagedVec::new())
+        // sc_ref.staked_nfts(&user_address, &impl_token_id);
+        ManagedVec::new()
     }
 }
 
@@ -135,8 +133,8 @@ where
 {
     fn drop(&mut self) {
         // commit changes to storage for the mutable fields
-        self.sc_ref
-            .staked_nfts(&self.impl_token_id)
-            .insert(self.user_address.clone(), self.staked_assets.clone());
+        // self.sc_ref
+        //     .staked_nfts(&self.impl_token_id)
+        //     .insert(self.user_address.clone(), self.staked_assets.clone());
     }
 }
