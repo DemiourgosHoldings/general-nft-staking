@@ -1,11 +1,8 @@
 use crate::{
     staking_modules::staking_module_type::StakingModuleType,
-    types::{
-        nonce_qty_pair::NonceQtyPair,
-        ui_types::{
-            UIAggregatedPoolScore, UIExtendedAggregatedPoolScore, UIUnbondingAsset,
-            UIUserDataPayload, UIUserPoolData,
-        },
+    types::ui_types::{
+        UIAggregatedPoolScore, UIExtendedAggregatedPoolScore, UIUnbondingAsset, UIUserDataPayload,
+        UIUserPoolData,
     },
     utils::get_all_pending_rewards,
 };

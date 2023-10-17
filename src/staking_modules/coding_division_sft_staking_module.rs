@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     constants::VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE,
-    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
+    types::start_unbonding_payload::StartUnbondingPayload,
 };
 
 pub struct CodingDivisionSftStakingModule<'a, C>

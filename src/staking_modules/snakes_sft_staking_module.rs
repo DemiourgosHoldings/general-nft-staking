@@ -4,7 +4,7 @@ use super::{
     default::DefaultStakingModule,
     staking_module_type::{StakingModuleType, VestaStakingModule},
 };
-use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
+use crate::types::start_unbonding_payload::StartUnbondingPayload;
 
 pub struct SnakesSftStakingModule<'a, C>
 where
