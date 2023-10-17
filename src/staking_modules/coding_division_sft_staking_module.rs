@@ -6,7 +6,7 @@ use super::{
 };
 use crate::{
     constants::VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE,
-    types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload},
+    types::start_unbonding_payload::StartUnbondingPayload,
 };
 
 pub struct CodingDivisionSftStakingModule<'a, C>
@@ -18,6 +18,7 @@ where
     sc_ref: &'a C,
     impl_token_id: TokenIdentifier<C::Api>,
     default_impl: DefaultStakingModule<'a, C>,
+    user_address: ManagedAddress<C::Api>,
 }
 
 impl<'a, C> CodingDivisionSftStakingModule<'a, C>
@@ -32,28 +33,32 @@ where
         user_address: ManagedAddress<C::Api>,
         module_type: StakingModuleType,
     ) -> Self {
-        let default_impl =
-            DefaultStakingModule::new(sc_ref, impl_token_id.clone(), user_address, module_type);
+        let default_impl = DefaultStakingModule::new(
+            sc_ref,
+            impl_token_id.clone(),
+            user_address.clone(),
+            module_type,
+        );
         Self {
             sc_ref,
             impl_token_id,
             default_impl,
+            user_address,
         }
     }
 
     fn count_full_sets(&self) -> BigUint<C::Api> {
         let mut full_sets = BigUint::from(100_000u32);
+        let staked_assets = self
+            .sc_ref
+            .staked_nfts(&self.user_address, &self.impl_token_id);
 
         for set_nonce in 1..=VESTA_CODING_DIVISION_FULL_SET_MAX_NONCE {
-            let item = self
-                .default_impl
-                .staked_assets
-                .iter()
-                .find(|p| p.nonce == set_nonce);
-            if item.is_none() {
+            let item_quantity = staked_assets.get(&set_nonce);
+            if item_quantity.is_none() {
                 return BigUint::zero();
             }
-            let item_quantity = item.unwrap().quantity;
+            let item_quantity = item_quantity.unwrap();
             if item_quantity < full_sets {
                 full_sets = item_quantity;
             }
@@ -98,28 +103,7 @@ where
     }
 
     fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
-        let existing_item_index = self
-            .default_impl
-            .staked_assets
-            .iter()
-            .position(|p| p.nonce == nonce);
-        let item_to_insert;
-        if existing_item_index.is_none() {
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: amount,
-            };
-        } else {
-            let index_to_remove = existing_item_index.unwrap();
-            let existing_item = self.default_impl.staked_assets.get(index_to_remove);
-            self.default_impl.staked_assets.remove(index_to_remove);
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: existing_item.quantity + amount,
-            };
-        }
-
-        self.default_impl.staked_assets.push(item_to_insert);
+        self.default_impl.add_to_storage(nonce, amount);
     }
 
     fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {

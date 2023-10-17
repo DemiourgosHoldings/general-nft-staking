@@ -4,7 +4,7 @@ use super::{
     default::DefaultStakingModule,
     staking_module_type::{StakingModuleType, VestaStakingModule},
 };
-use crate::types::{nonce_qty_pair::NonceQtyPair, start_unbonding_payload::StartUnbondingPayload};
+use crate::types::start_unbonding_payload::StartUnbondingPayload;
 
 pub struct SnakesSftStakingModule<'a, C>
 where
@@ -78,8 +78,10 @@ where
         );
 
         let mut shares_score = BigUint::<C::Api>::zero();
-
-        for staked_nft_info in self.default_impl.staked_assets.iter() {
+        let staked_assets = self
+            .sc_ref
+            .get_staked_nfts(&self.user_address, &self.impl_token_id);
+        for staked_nft_info in staked_assets.iter() {
             if staked_nft_info.nonce == 1 {
                 let asset_nonce_score = self.sc_ref.nonce_asset_score(
                     &self.impl_token_id,
@@ -114,28 +116,7 @@ where
     }
 
     fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
-        let existing_item_index = self
-            .default_impl
-            .staked_assets
-            .iter()
-            .position(|p| p.nonce == nonce);
-        let item_to_insert;
-        if existing_item_index.is_none() {
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: amount,
-            };
-        } else {
-            let index_to_remove = existing_item_index.unwrap();
-            let existing_item = self.default_impl.staked_assets.get(index_to_remove);
-            self.default_impl.staked_assets.remove(index_to_remove);
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: existing_item.quantity + amount,
-            };
-        }
-
-        self.default_impl.staked_assets.push(item_to_insert);
+        self.default_impl.add_to_storage(nonce, amount);
     }
 
     fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {

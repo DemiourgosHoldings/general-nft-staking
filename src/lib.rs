@@ -108,8 +108,9 @@ pub trait NftStakingContract:
 
     fn require_unbonding_is_valid(&self, payload: &StartUnbondingPayload<Self::Api>) {
         require!(
-            self.staked_nfts(&payload.token_identifier)
-                .contains_key(&self.blockchain().get_caller())
+            !self
+                .staked_nfts(&self.blockchain().get_caller(), &payload.token_identifier)
+                .is_empty()
                 && !payload.is_empty()
                 && !self.has_duplicate_nonces(&payload.items),
             ERR_FAILED_UNBONDING
