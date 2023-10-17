@@ -97,30 +97,8 @@ where
         self.apply_full_set_bonus(default_base_score)
     }
 
-    // todo: use storage
     fn add_to_storage(&mut self, nonce: u64, amount: BigUint<C::Api>) {
-        let existing_item_index = self
-            .default_impl
-            .staked_assets
-            .iter()
-            .position(|p| p.nonce == nonce);
-        let item_to_insert;
-        if existing_item_index.is_none() {
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: amount,
-            };
-        } else {
-            let index_to_remove = existing_item_index.unwrap();
-            let existing_item = self.default_impl.staked_assets.get(index_to_remove);
-            self.default_impl.staked_assets.remove(index_to_remove);
-            item_to_insert = NonceQtyPair {
-                nonce,
-                quantity: existing_item.quantity + amount,
-            };
-        }
-
-        self.default_impl.staked_assets.push(item_to_insert);
+        self.default_impl.add_to_storage(nonce, amount);
     }
 
     fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {

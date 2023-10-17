@@ -39,12 +39,6 @@ where
         }
     }
 
-    //TODO: add a struct field and store this data there instead of reading from storage everytime
-    //TODO: add a default DROP fn that stores the changes in this struct field to storage
-    pub fn get_staked_nfts_data(&self) -> ManagedVec<C::Api, NonceQtyPair<C::Api>> {
-        Self::get_staked_assets(&self.sc_ref, &self.impl_token_id, &self.user_address)
-    }
-
     fn get_staked_assets(
         sc_ref: &'a C,
         impl_token_id: &TokenIdentifier<C::Api>,
@@ -97,32 +91,6 @@ where
 
     fn start_unbonding(&mut self, payload: StartUnbondingPayload<<C>::Api>) -> bool {
         let mut total_unstaked_quantity = BigUint::zero();
-
-        // let mut remaining_staked_nfts = ManagedVec::new();
-        // for staked_nft in self.staked_assets.iter() {
-        //     let unstake_nonce_quantity = payload.get_nonce_quantity(staked_nft.nonce);
-        //     if &unstake_nonce_quantity == &BigUint::zero() {
-        //         remaining_staked_nfts.push(staked_nft);
-        //         continue;
-        //     }
-
-        //     if &unstake_nonce_quantity > &staked_nft.quantity {
-        //         return false;
-        //     }
-
-        //     if &staked_nft.quantity == &unstake_nonce_quantity {
-        //         total_unstaked_quantity += &staked_nft.quantity;
-        //         continue;
-        //     }
-
-        //     total_unstaked_quantity += &unstake_nonce_quantity;
-        //     remaining_staked_nfts.push(NonceQtyPair {
-        //         nonce: staked_nft.nonce,
-        //         quantity: &staked_nft.quantity - &unstake_nonce_quantity,
-        //     });
-        // }
-
-        // self.staked_assets = remaining_staked_nfts;
         let mut staked_assets_storage = self
             .sc_ref
             .staked_nfts(&self.user_address, &self.impl_token_id);
