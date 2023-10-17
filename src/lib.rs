@@ -76,6 +76,8 @@ pub trait NftStakingContract:
 
             let batch_payments = unbonding_payload.get_payments();
             payments.extend(&batch_payments);
+            self.unbonding_assets(&caller)
+                .remove(&start_unbonding_timestamp);
         }
 
         require!(payments.len() > 0, ERR_NOTHING_TO_CLAIM);

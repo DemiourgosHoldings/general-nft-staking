@@ -266,3 +266,31 @@ fn unbond_multiple_sft_nonces_includes_quantity() {
         POOL2_QUANTITY_PER_NONCE as u64 - amount_to_stake as u64 + amount_to_unstake,
     );
 }
+
+
+#[test]
+#[allow(deprecated)]
+fn unbond_same_nonce_multiple_times_more_than_staked_fails() {
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    let transfers = vec![new_nft_transfer(POOL2_TOKEN_ID, 1, 2)];
+    setup.set_stake_pool_type(POOL2_TOKEN_ID, StakingModuleType::CodingDivisionSfts);
+    setup.set_token_score(StakingModuleType::CodingDivisionSfts, POOL2_TOKEN_ID, 1);
+    setup.stake(&transfers, NO_ERR_MSG);
+
+    setup.start_unbonding(POOL2_TOKEN_ID, &[(1, 1), (1, 1), (1, 1)], ERR_FAILED_UNBONDING);
+}
+
+#[test]
+#[allow(deprecated)]
+fn double_claim_unbonded_fails_with_expected_error() {
+    let mut setup = ContractSetup::new(nft_staking::contract_obj);
+    let transfers = vec![new_nft_transfer(POOL1_TOKEN_ID, 1, 1)];
+    setup.set_stake_pool_type(POOL1_TOKEN_ID, StakingModuleType::XBunnies);
+    setup.stake(&transfers, NO_ERR_MSG);
+
+    setup.start_unbonding(POOL1_TOKEN_ID, &[(1, 1)], NO_ERR_MSG);
+    setup.b_mock.set_block_timestamp(DEFAULT_UNBONDING_TIME_PENALTY + 1);
+
+    setup.claim_unbonded(NO_ERR_MSG);
+    setup.claim_unbonded(ERR_NOTHING_TO_CLAIM);
+}

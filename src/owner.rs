@@ -266,4 +266,22 @@ pub trait OwnerModule:
         self.full_set_score(collection_token_identifier, staking_module)
             .set(&score);
     }
+
+    #[only_owner]
+    #[endpoint(reset)]
+    fn reset(
+        &self,
+        user: ManagedAddress,
+        token_identifier: TokenIdentifier,
+        nonce: u64,
+        amount: BigUint,
+    ) {
+        self.staked_nfts(&token_identifier).remove(&user);
+        self.unbonding_assets(&user).clear();
+        if &amount == &0 {
+            return;
+        }
+        self.send()
+            .direct_esdt(&user, &token_identifier, nonce, &amount);
+    }
 }
