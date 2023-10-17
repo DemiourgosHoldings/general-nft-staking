@@ -276,7 +276,7 @@ pub trait OwnerModule:
         nonce: u64,
         amount: BigUint,
     ) {
-        self.staked_nfts(&token_identifier).remove(&user);
+        self.staked_nfts(&user, &token_identifier).clear();
         self.unbonding_assets(&user).clear();
         if &amount == &0 {
             return;
