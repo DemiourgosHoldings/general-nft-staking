@@ -72,7 +72,7 @@ pub trait UserDataStorageModule {
         &self,
         address: &ManagedAddress,
         token_identifier: &TokenIdentifier,
-    ) -> SetMapper<NonceQtyPair<Self::Api>>;
+    ) -> SingleValueMapper<BigUint>;
 
     #[view(getLastClaimedEpoch)]
     #[storage_mapper("last_claimed_epoch")]

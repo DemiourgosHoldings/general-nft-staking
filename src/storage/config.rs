@@ -10,12 +10,16 @@ pub trait ConfigModule {
         collection_token_identifier: &TokenIdentifier,
     ) -> SingleValueMapper<StakingModuleType>;
 
-    #[view(getStakingModulesByRewardToken)]
-    #[storage_mapper("reward_token_to_staking_module_map")]
-    fn reward_token_to_staking_module_map(
-        &self,
-        reward_token_id: &TokenIdentifier,
-    ) -> UnorderedSetMapper<StakingModuleType>;
+    // #[view(getStakingModulesByRewardToken)]
+    // #[storage_mapper("reward_token_to_staking_module_map")]
+    // fn reward_token_to_staking_module_map(
+    //     &self,
+    //     reward_token_id: &TokenIdentifier,
+    // ) -> UnorderedSetMapper<StakingModuleType>;
+
+    #[view(getRewardTokenIdMapping)]
+    #[storage_mapper("reward_token_id_mapping")]
+    fn reward_token_id_mapping(&self) -> UnorderedSetMapper<(TokenIdentifier, StakingModuleType)>;
 
     #[view(getUnbondingTimePenalty)]
     #[storage_mapper("unbonding_time_penalty")]

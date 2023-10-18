@@ -14,18 +14,30 @@ where
 {
     let mut pending_rewards = ManagedVec::new();
 
-    for token_id in sc_ref.reward_token_identifiers().iter() {
-        for staking_module_type in sc_ref.reward_token_to_staking_module_map(&token_id).iter() {
-            match get_token_pending_reward_payment(
-                sc_ref,
-                address,
-                &token_id,
-                store_rewards,
-                &staking_module_type,
-            ) {
-                Some(pending_reward) => pending_rewards.push(pending_reward),
-                None => continue,
-            };
+    // for token_id in sc_ref.reward_token_identifiers().iter() {
+    //     for staking_module_type in sc_ref.reward_token_to_staking_module_map(&token_id).iter() {
+    //         match get_token_pending_reward_payment(
+    //             sc_ref,
+    //             address,
+    //             &token_id,
+    //             store_rewards,
+    //             &staking_module_type,
+    //         ) {
+    //             Some(pending_reward) => pending_rewards.push(pending_reward),
+    //             None => continue,
+    //         };
+    //     }
+    // }
+
+    for (token_identifier, staking_module_type) in sc_ref.reward_token_id_mapping().iter() {
+        if let Some(pending_reward) = get_token_pending_reward_payment(
+            sc_ref,
+            address,
+            &token_identifier,
+            store_rewards,
+            &staking_module_type,
+        ) {
+            pending_rewards.push(pending_reward);
         }
     }
 

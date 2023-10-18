@@ -251,8 +251,8 @@ pub trait OwnerModule:
         reward_token_identifier: TokenIdentifier,
         staking_module_type: StakingModuleType,
     ) {
-        self.reward_token_to_staking_module_map(&reward_token_identifier)
-            .insert(staking_module_type);
+        self.reward_token_id_mapping()
+            .insert((reward_token_identifier, staking_module_type));
     }
 
     #[only_owner]
