@@ -1,3 +1,5 @@
+use core::future::pending;
+
 use crate::staking_modules::staking_module_type::StakingModuleType;
 
 multiversx_sc::imports!();
@@ -13,21 +15,6 @@ where
     C: crate::storage::score::ScoreStorageModule,
 {
     let mut pending_rewards = ManagedVec::new();
-
-    // for token_id in sc_ref.reward_token_identifiers().iter() {
-    //     for staking_module_type in sc_ref.reward_token_to_staking_module_map(&token_id).iter() {
-    //         match get_token_pending_reward_payment(
-    //             sc_ref,
-    //             address,
-    //             &token_id,
-    //             store_rewards,
-    //             &staking_module_type,
-    //         ) {
-    //             Some(pending_reward) => pending_rewards.push(pending_reward),
-    //             None => continue,
-    //         };
-    //     }
-    // }
 
     for (token_identifier, staking_module_type) in sc_ref.reward_token_id_mapping().iter() {
         if let Some(pending_reward) = get_token_pending_reward_payment(
@@ -63,7 +50,13 @@ where
     }
 
     if store_rewards {
-        secure_rewards(sc_ref, address, &token_identifier, &staking_module_type);
+        secure_rewards(
+            sc_ref,
+            address,
+            &token_identifier,
+            &staking_module_type,
+            Some(pending_reward.clone()),
+        );
     }
 
     Some(EsdtTokenPayment::new(
@@ -135,16 +128,16 @@ pub fn secure_rewards<'a, C>(
     address: &ManagedAddress<C::Api>,
     token_identifier: &TokenIdentifier<C::Api>,
     staking_module: &StakingModuleType,
+    pending_rewards_opt: Option<BigUint<C::Api>>,
 ) where
     C: crate::storage::config::ConfigModule,
     C: crate::storage::user_data::UserDataStorageModule,
     C: crate::storage::score::ScoreStorageModule,
 {
-    let pending_rewards =
-        get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module);
-    if &pending_rewards == &0 {
-        return;
-    }
+    let pending_rewards = match pending_rewards_opt {
+        Some(val) => val,
+        None => get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module),
+    };
     let block_epoch = sc_ref.blockchain().get_block_epoch();
     if sc_ref
         .reward_rate(block_epoch, staking_module, token_identifier)

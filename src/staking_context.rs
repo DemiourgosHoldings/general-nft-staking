@@ -112,6 +112,7 @@ where
                 &self.caller,
                 &reward_token_id,
                 &self.staking_module_type,
+                None,
             );
         }
     }

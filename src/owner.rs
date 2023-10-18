@@ -66,7 +66,13 @@ pub trait OwnerModule:
 
         for reward_token_id in self.reward_token_identifiers().iter() {
             let staking_module_type = self.stake_pool_type_configuration(&reward_token_id).get();
-            secure_rewards(self, &user_address, &reward_token_id, &staking_module_type);
+            secure_rewards(
+                self,
+                &user_address,
+                &reward_token_id,
+                &staking_module_type,
+                None,
+            );
 
             self.update_score_handler(
                 &staking_module_type,
@@ -81,6 +87,7 @@ pub trait OwnerModule:
             &user_address,
             &self.primary_reward_token_identifier().get(),
             &StakingModuleType::All,
+            None,
         );
 
         self.update_score_handler(
