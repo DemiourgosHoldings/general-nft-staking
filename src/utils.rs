@@ -1,8 +1,26 @@
-use core::future::pending;
-
 use crate::staking_modules::staking_module_type::StakingModuleType;
 
 multiversx_sc::imports!();
+
+pub fn claim_all_pending_rewards<'a, C>(
+    sc_ref: &'a C,
+    caller: &ManagedAddress<C::Api>,
+) -> ManagedVec<C::Api, EsdtTokenPayment<C::Api>>
+where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let pending_rewards = get_all_pending_rewards(sc_ref, caller, true);
+
+    for pending_reward in pending_rewards.iter() {
+        sc_ref
+            .pending_rewards(caller, &pending_reward.token_identifier)
+            .clear();
+    }
+
+    pending_rewards
+}
 
 pub fn get_all_pending_rewards<'a, C>(
     sc_ref: &'a C,
@@ -17,7 +35,7 @@ where
     let mut pending_rewards = ManagedVec::new();
 
     for (token_identifier, staking_module_type) in sc_ref.reward_token_id_mapping().iter() {
-        if let Some(pending_reward) = get_token_pending_reward_payment(
+        if let Some(pending_reward) = get_single_token_pending_reward_payment(
             sc_ref,
             address,
             &token_identifier,
@@ -31,7 +49,7 @@ where
     pending_rewards
 }
 
-pub fn get_token_pending_reward_payment<'a, C>(
+pub fn get_single_token_pending_reward_payment<'a, C>(
     sc_ref: &'a C,
     address: &ManagedAddress<C::Api>,
     token_identifier: &TokenIdentifier<C::Api>,
@@ -44,7 +62,7 @@ where
     C: crate::storage::score::ScoreStorageModule,
 {
     let pending_reward =
-        get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module_type);
+        get_total_token_pending_reward(sc_ref, address, token_identifier, staking_module_type);
     if &pending_reward == &0 {
         return None;
     }
@@ -64,6 +82,40 @@ where
         0,
         pending_reward,
     ))
+}
+
+pub fn secure_rewards<'a, C>(
+    sc_ref: &'a C,
+    address: &ManagedAddress<C::Api>,
+    token_identifier: &TokenIdentifier<C::Api>,
+    staking_module: &StakingModuleType,
+    pending_rewards_opt: Option<BigUint<C::Api>>,
+) where
+    C: crate::storage::config::ConfigModule,
+    C: crate::storage::user_data::UserDataStorageModule,
+    C: crate::storage::score::ScoreStorageModule,
+{
+    let pending_rewards = match pending_rewards_opt {
+        Some(val) => val,
+        None => get_total_token_pending_reward(sc_ref, address, token_identifier, staking_module),
+    };
+    let block_epoch = sc_ref.blockchain().get_block_epoch();
+    if sc_ref
+        .reward_rate(block_epoch, staking_module, token_identifier)
+        .is_empty()
+    {
+        sc_ref
+            .last_claimed_epoch(staking_module, address)
+            .set(&block_epoch - 1);
+    } else {
+        sc_ref
+            .last_claimed_epoch(staking_module, address)
+            .set(block_epoch);
+    }
+
+    sc_ref
+        .pending_rewards(address, token_identifier)
+        .update(|old_value| *old_value = pending_rewards);
 }
 
 pub fn get_total_token_pending_reward<'a, C>(
@@ -121,58 +173,4 @@ where
     }
 
     pending_reward
-}
-
-pub fn secure_rewards<'a, C>(
-    sc_ref: &'a C,
-    address: &ManagedAddress<C::Api>,
-    token_identifier: &TokenIdentifier<C::Api>,
-    staking_module: &StakingModuleType,
-    pending_rewards_opt: Option<BigUint<C::Api>>,
-) where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-    C: crate::storage::score::ScoreStorageModule,
-{
-    let pending_rewards = match pending_rewards_opt {
-        Some(val) => val,
-        None => get_unstored_pending_rewards(sc_ref, address, token_identifier, staking_module),
-    };
-    let block_epoch = sc_ref.blockchain().get_block_epoch();
-    if sc_ref
-        .reward_rate(block_epoch, staking_module, token_identifier)
-        .is_empty()
-    {
-        sc_ref
-            .last_claimed_epoch(staking_module, address)
-            .set(&block_epoch - 1);
-    } else {
-        sc_ref
-            .last_claimed_epoch(staking_module, address)
-            .set(block_epoch);
-    }
-
-    sc_ref
-        .pending_rewards(address, token_identifier)
-        .update(|old_value| *old_value += pending_rewards);
-}
-
-pub fn claim_all_pending_rewards<'a, C>(
-    sc_ref: &'a C,
-    caller: &ManagedAddress<C::Api>,
-) -> ManagedVec<C::Api, EsdtTokenPayment<C::Api>>
-where
-    C: crate::storage::config::ConfigModule,
-    C: crate::storage::user_data::UserDataStorageModule,
-    C: crate::storage::score::ScoreStorageModule,
-{
-    let pending_rewards = get_all_pending_rewards(sc_ref, caller, true);
-
-    for pending_reward in pending_rewards.iter() {
-        sc_ref
-            .pending_rewards(caller, &pending_reward.token_identifier)
-            .clear();
-    }
-
-    pending_rewards
 }
