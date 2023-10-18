@@ -1,5 +1,6 @@
 use crate::{
-    staking_modules::staking_module_type::StakingModuleType,
+    staking_context::StakingContext,
+    staking_modules::staking_module_type::{self, StakingModuleType, VestaStakingModule},
     types::ui_types::{
         UIAggregatedPoolScore, UIExtendedAggregatedPoolScore, UIUnbondingAsset, UIUserDataPayload,
         UIUserPoolData,
@@ -14,6 +15,7 @@ pub trait ViewsModule:
     crate::storage::config::ConfigModule
     + crate::storage::user_data::UserDataStorageModule
     + crate::storage::score::ScoreStorageModule
+    + crate::requirements::RequirementsModule
 {
     #[view(getGeneralStakingData)]
     fn get_general_staking_data(&self) -> ManagedVec<UIAggregatedPoolScore<Self::Api>> {
@@ -68,17 +70,32 @@ pub trait ViewsModule:
         }
 
         let pool_module_type = self.stake_pool_type_configuration(token_identifier).get();
-        let pool_score = self
-            .aggregated_user_staking_score(&pool_module_type, address)
-            .get();
-        let raw_pool_score = self
-            .raw_aggregated_user_staking_score(&pool_module_type, address)
-            .get();
+        // let pool_score = self
+        //     .aggregated_user_staking_score(&StakingModuleType::All, address)
+        //     .get();
+        // let raw_pool_score = self
+        //     .raw_aggregated_user_staking_score(&StakingModuleType::All, address)
+        //     .get();
+
+        // let secondary_pool_score = self
+        //     .aggregated_user_staking_score(&pool_module_type, address)
+        //     .get();
+        // let secondary_raw_pool_score = self
+        //     .raw_aggregated_user_staking_score(&pool_module_type, address)
+        //     .get();
+        let context = StakingContext::new_with_address(self, token_identifier, address.clone());
+        let pool_score = context.get_base_user_score(&StakingModuleType::All);
+        let raw_pool_score = context.get_base_user_score(&StakingModuleType::All);
+
+        let secondary_pool_score = context.get_base_user_score(&pool_module_type);
+        let secondary_raw_pool_score = context.get_base_user_score(&pool_module_type);
 
         let pool_score_data = UIExtendedAggregatedPoolScore {
             pool_type: pool_module_type as u8,
             pool_score,
+            secondary_pool_score,
             raw_pool_score,
+            secondary_raw_pool_score,
         };
 
         let user_pool_data = UIUserPoolData {
@@ -88,6 +105,17 @@ pub trait ViewsModule:
         };
 
         Option::Some(user_pool_data)
+    }
+
+    #[view(getBaseScore)]
+    fn get_base_user_score(
+        &self,
+        token_identifier: TokenIdentifier<Self::Api>,
+        staking_module_type: StakingModuleType,
+        user: ManagedAddress,
+    ) -> BigUint {
+        let context = StakingContext::new_with_address(self, &token_identifier, user);
+        context.get_base_user_score(&staking_module_type)
     }
 
     fn parse_unbonding_assets(

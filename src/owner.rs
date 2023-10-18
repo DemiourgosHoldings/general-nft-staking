@@ -278,6 +278,13 @@ pub trait OwnerModule:
     ) {
         self.staked_nfts(&user, &token_identifier).clear();
         self.unbonding_assets(&user).clear();
+        for staking_type in StakingModuleType::iter() {
+            self.raw_aggregated_user_staking_score(&staking_type, &user)
+                .set(&BigUint::zero());
+            self.aggregated_user_staking_score(&staking_type, &user)
+                .set(&BigUint::zero());
+            self.aggregated_staking_score(&staking_type).clear();
+        }
         if &amount == &0 {
             return;
         }

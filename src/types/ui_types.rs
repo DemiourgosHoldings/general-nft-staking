@@ -18,6 +18,8 @@ pub struct UIExtendedAggregatedPoolScore<M: ManagedTypeApi> {
     pub pool_type: u8,
     pub pool_score: BigUint<M>,
     pub raw_pool_score: BigUint<M>,
+    pub secondary_pool_score: BigUint<M>,
+    pub secondary_raw_pool_score: BigUint<M>,
 }
 
 #[derive(

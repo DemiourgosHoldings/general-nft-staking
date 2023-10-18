@@ -38,6 +38,14 @@ where
 {
     pub fn new(sc_ref: &'a C, payment_token_id: &TokenIdentifier<C::Api>) -> Self {
         let caller = sc_ref.blockchain().get_caller();
+        Self::new_with_address(sc_ref, payment_token_id, caller)
+    }
+
+    pub fn new_with_address(
+        sc_ref: &'a C,
+        payment_token_id: &TokenIdentifier<C::Api>,
+        caller: ManagedAddress<C::Api>,
+    ) -> Self {
         let staking_module_type = sc_ref.stake_pool_type_configuration(payment_token_id).get();
 
         let (aggregated_general_score, aggregated_user_score_with_deb) =
@@ -188,5 +196,10 @@ where
     pub fn update_staking_scores(&mut self) {
         self.update_primary_score();
         self.update_secondary_score();
+    }
+
+    pub fn get_base_user_score(&self, staking_module_type: &StakingModuleType) -> BigUint<C::Api> {
+        self.staking_module_impl
+            .get_base_user_score(staking_module_type)
     }
 }
